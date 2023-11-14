@@ -1,20 +1,16 @@
 // tested with MH-ET LIVE ESP32 MiniKIT
-
-/****************************************************************************************************************************
-  ESP_WiFi.ino
-  For ESP8266 / ESP32 boards
-
+// 
+/*
+VCC - VCC
+GND - GND
+SDA - IO16
+SCL - IO17
+*/
+/*
+based on ESP_WiFiManager_Lite example
   ESP_WiFiManager_Lite (https://github.com/khoih-prog/ESP_WiFiManager_Lite) is a library 
-  for the ESP32/ESP8266 boards to enable store Credentials in EEPROM/SPIFFS/LittleFS for easy 
-  configuration/reconfiguration and autoconnect/autoreconnect of WiFi and other services without Hardcoding.
 
-  Built by Khoi Hoang https://github.com/khoih-prog/ESP_WiFiManager_Lite
-  Licensed under MIT license
-  *****************************************************************************************************************************/
-
-
-
-
+*/
 
 /////////////////////////////////////////  definice WifiMAnager
 #include "defines.h"
@@ -32,10 +28,15 @@ String poleDnu[] = { "", F("Pondělí"), F("Úterý"), F("Středa"), F("Čtvrtek
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-#define D4 17
-#define D3 16
-//#define D4 21
-//#define D3 22
+
+//MH-ET LIVE ESP32 MiniKIT
+#define D4 17 
+#define D3 16 
+
+/*
+#define D4 21
+#define D3 22
+*/
 #endif
 
 #ifdef ESP8266
@@ -49,7 +50,7 @@ String poleDnu[] = { "", F("Pondělí"), F("Úterý"), F("Středa"), F("Čtvrtek
 
 #include <LiquidCrystal_I2C.h>  // by Frank de Brabander, 1.1.2
 
-LiquidCrystal_I2C lcd(0x27, 20, 4); //modry 0x27
+LiquidCrystal_I2C lcd(0x27, 20, 4);  //modry 0x27
 // zeleny LiquidCrystal_I2C lcd(0x3F, 20, 4);
 
 int pocitacVterin = 30;
@@ -79,10 +80,10 @@ String parametry = "";
 char parametryC[200] = "?cisIds=58791&minutesBefore=1&minutesAfter=60&limit=30&mode=departures&includeMetroTrains=true&order=real";
 
 String retezec = "";
-bool filtrNeaktivni=true;
+bool filtrNeaktivni = true;
 
 
- DynamicJsonDocument root(9000);
+DynamicJsonDocument root(9000);
 
 
 ////////////////////////////////////// funkce WifiManager
@@ -270,7 +271,7 @@ void stahni() {
 
     WiFiClientSecure client;
 
-   // WiFiClientSecure *client = new WiFiClientSecure;
+    // WiFiClientSecure *client = new WiFiClientSecure;
     //WiFiClientSecure *client = &client2;
     client.setInsecure();
 
@@ -298,13 +299,13 @@ void stahni() {
       const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
       Serial.println(String(capacity));
       //DynamicJsonDocument root(9000);
-     
+
 
       StaticJsonDocument<200> filter;
       filter["departures"][0]["departure_timestamp"]["minutes"] = true;
       filter["departures"][0]["trip"]["headsign"] = true;
       filter["departures"][0]["route"]["short_name"] = true;
-      Serial.println("Velikost filtru:"+String(filter.size()));
+      Serial.println("Velikost filtru:" + String(filter.size()));
 
 
 
@@ -336,14 +337,14 @@ void stahni() {
       int counter = 0;
 
       for (int i = 0; (i < arraySize); i++) {
-       // Serial.println("pruchod "+String(i));
+        // Serial.println("pruchod "+String(i));
 
         String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
         String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
         String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
         Serial.println(linka + " " + cil + " " + cas);
 
-        if ((linka == "133") || (linka == "908") || (linka == "909")||filtrNeaktivni)  //vyresit lepe!
+        if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)  //vyresit lepe!
         {
           if (counter < maxPocetOdjezduOled) {
             vykresliRadekOdjezduOled(linka, cil, cas, counter);
@@ -368,20 +369,20 @@ void stahni() {
       struct tm *timeinfo;
       time(&rawtime);
 
-      
+
 
       timeinfo = localtime(&rawtime);
 
       //timeinfo.hour;
-     // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
-      
+      // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
+
       char buffer[80];
 
 
       //strftime(buffer, 80, "%Y%m%d",timeinfo);
       strftime(buffer, 80, "%d.%m.%g %R", timeinfo);
 
-      int minutOdRana= 0;
+      int minutOdRana = 0;
       casPrikaz = buffer;
       strftime(buffer, 80, "%u", timeinfo);
       den = buffer;
