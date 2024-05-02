@@ -19,7 +19,7 @@ based on ESP_WiFiManager_Lite example
 
 ESP_WiFiManager_Lite *ESP_WiFiManager;
 
-String poleDnu[] = { "", F("Pondělí"), F("Úterý"), F("Středa"), F("Čtvrtek"), F("Pátek"), F("Sobota"), F("Neděle") };
+String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle" };
 
 
 ////////////////////////////////////// definice Golemio
@@ -42,6 +42,8 @@ String poleDnu[] = { "", F("Pondělí"), F("Úterý"), F("Středa"), F("Čtvrtek
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+
+
 #endif
 
 
@@ -75,6 +77,13 @@ int sloupecCil = 4;
 int sloupecCas = 15;
 int delkaCile = 30;
 int delkaLinky = 3;
+/*
+const int spickaOd=7;
+const int spickaDo=9;
+*/
+const int spickaOd=7;
+const int spickaDo=9;
+
 String idZastavky = "58791";  //58762 balabenka
 String parametry = "";
 char parametryC[200] = "?cisIds=58791&minutesBefore=1&minutesAfter=60&limit=30&mode=departures&includeMetroTrains=true&order=real";
@@ -185,7 +194,7 @@ void setupGolemio() {
   Serial.println("void setupGolemio()");
   Wire.begin(D3, D4);
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS,true,false)) {
     Serial.println(F("SSD1306 allocation failed"));
     /*  for (;;)
       ;  // Don't proceed, loop forever */
@@ -205,6 +214,7 @@ void setupGolemio() {
   Serial.println("DP3");
 
   Serial.println("displej bezi na SCL:" + String(SCL) + " SDA:" + String(SDA));
+  Serial.println("displej bezi na SCL:" + String(D4) + " SDA:" + String(D3));
 
   display.clearDisplay();
   Serial.println("DP4");
@@ -264,6 +274,17 @@ strncpy(klic, myMenuItems[0].pdata, sizeof(klic));
   configTime(1 * 3600, 1 * 3600, "pool.ntp.org", "time.nist.gov");
 }
 
+bool jeSpicka(tm *vstup)
+{
+  int hodina=vstup->tm_hour;
+  int den=vstup->tm_wday;
+
+  if((hodina>=spickaOd)&&(hodina<spickaDo)&&(den>0)&&(den<6))
+  {
+    return true;
+  }
+  return false;
+}
 
 void stahni() {
 
@@ -343,8 +364,11 @@ void stahni() {
         String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
         String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
         Serial.println(linka + " " + cil + " " + cas);
-
-        if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)  //vyresit lepe!
+//  if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)  
+        if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
+        //if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
+        //
+        if(true)
         {
           if (counter < maxPocetOdjezduOled) {
             vykresliRadekOdjezduOled(linka, cil, cas, counter);
@@ -369,15 +393,18 @@ void stahni() {
       struct tm *timeinfo;
       time(&rawtime);
 
-
+     
 
       timeinfo = localtime(&rawtime);
+
+      filtrNeaktivni=!jeSpicka(timeinfo);
+
+
 
       //timeinfo.hour;
       // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
 
       char buffer[80];
-
 
       //strftime(buffer, 80, "%Y%m%d",timeinfo);
       strftime(buffer, 80, "%d.%m.%g %R", timeinfo);
@@ -387,6 +414,8 @@ void stahni() {
       strftime(buffer, 80, "%u", timeinfo);
       den = buffer;
       vykresliCas();
+
+    
       ////////konec casu
 
       vykresliSpodniRadekDatum(casPrikaz, nahradISO8859(cisloDoDne(den.toInt())), cisloRadkuInfo);
@@ -410,6 +439,8 @@ void vykresliCas() {
   timeinfo = localtime(&rawtime);
   char bufferCas[20];
   strftime(bufferCas, 20, "%T", timeinfo);
+
+  Serial.println(String(timeinfo->tm_hour)+"::"+String(timeinfo->tm_min));
 
   lcd.setCursor(12, 3);
   String jenCas = bufferCas;
