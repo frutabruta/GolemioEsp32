@@ -1,5 +1,5 @@
 // tested with MH-ET LIVE ESP32 MiniKIT
-// 
+//
 /*
 VCC - VCC
 GND - GND
@@ -11,6 +11,10 @@ based on ESP_WiFiManager_Lite example
   ESP_WiFiManager_Lite (https://github.com/khoih-prog/ESP_WiFiManager_Lite) is a library 
 
 */
+
+
+#include <Wire.h>
+
 
 /////////////////////////////////////////  definice WifiMAnager
 #include "defines.h"
@@ -30,44 +34,53 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 #include <HTTPClient.h>
 
 //MH-ET LIVE ESP32 MiniKIT
+/*
 #define D4 17 
 #define D3 16 
+*/
 
-/*
+//DOIT ESP32
+
 #define D4 21
 #define D3 22
-*/
+
 #endif
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-
-
 #endif
 
 
 
 #include <ArduinoJson.h>
 
-#include <LiquidCrystal_I2C.h>  // by Frank de Brabander, 1.1.2
 
-LiquidCrystal_I2C lcd(0x27, 20, 4);  //modry 0x27
-// zeleny LiquidCrystal_I2C lcd(0x3F, 20, 4);
 
+
+//#define USE_OLED 1
+#define USE_LCD 1
+
+
+
+
+
+#ifdef USE_LCD
+
+#include "lcd.h"
+
+#endif
 int pocitacVterin = 30;
 
+
+#ifdef USE_OLED
+
+#include "oled.h"
 //uprava knihovny: https://forum.hwkitchen.cz/viewtopic.php?t=2503
 //Adafruit GFX:
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#define SCREEN_WIDTH 128     // OLED display width, in pixels
-#define SCREEN_HEIGHT 64     // OLED display height, in pixels
-#define OLED_RESET -1        // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C  ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int vyska32 = 0;
+#endif
+
 
 char klic[350] = "XXX";
 
@@ -81,8 +94,8 @@ int delkaLinky = 3;
 const int spickaOd=7;
 const int spickaDo=9;
 */
-const int spickaOd=7;
-const int spickaDo=9;
+const int spickaOd = 7;
+const int spickaDo = 9;
 
 String idZastavky = "58791";  //58762 balabenka
 String parametry = "";
@@ -94,10 +107,23 @@ bool filtrNeaktivni = true;
 
 DynamicJsonDocument root(9000);
 
+StaticJsonDocument<200> filter;
 
+
+
+HTTPClient http;  //Declare an object of class HTTPClient
+String celaAdresa = "https://api.golemio.cz/v2/pid/departureboards/";
+WiFiClientSecure client;
 ////////////////////////////////////// funkce WifiManager
 
-
+void setupFilter()
+{
+filter["departures"][0]["departure_timestamp"]["minutes"] = true;
+filter["departures"][0]["trip"]["headsign"] = true;
+filter["departures"][0]["route"]["short_name"] = true;
+Serial.print("Velikost filtru:");
+Serial.println(String(filter.size()));
+}
 
 void heartBeatPrint() {
   static int num = 1;
@@ -192,47 +218,55 @@ void setupManager() {
 
 void setupGolemio() {
   Serial.println("void setupGolemio()");
-  Wire.begin(D3, D4);
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS,true,false)) {
+  Wire.begin(SDA, SCL);
+
+#ifdef USE_OLED
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS, true, false)) {
     Serial.println(F("SSD1306 allocation failed"));
     /*  for (;;)
       ;  // Don't proceed, loop forever */
   }
+  oled.clearDisplay();
+  oled.setTextSize(1);               // Normal 1:1 pixel scale
+  oled.setTextColor(SSD1306_WHITE);  // Draw white text
+  oled.cp437(true);
+  oled.clearDisplay();
+#endif
 
-  Serial.println("DP1");
+
+#ifdef USE_LCD
   lcd.init();
   lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Connecting");
-  Serial.println("DP2");
-  display.clearDisplay();
-  display.setTextSize(1);               // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);  // Draw white text
-  display.cp437(true);
-  Serial.println("DP3");
+#endif
 
+
+
+
+  Serial.println("DP3");
   Serial.println("displej bezi na SCL:" + String(SCL) + " SDA:" + String(SDA));
   Serial.println("displej bezi na SCL:" + String(D4) + " SDA:" + String(D3));
-
-  display.clearDisplay();
   Serial.println("DP4");
 
 
   Serial.println("connected...yeey :)");
 
-  display.clearDisplay();
-
 
   Serial.println("");
-  Serial.println("WiFi connected");
+#ifdef USE_OLED Serial.println("WiFi connected");
 
-  display.clearDisplay();
-  drawStringFromLeft(0, 0, "IP address: ");
-  drawStringFromLeft(0, 10, WiFi.localIP().toString());
-  drawStringFromLeft(0, 20, " klic: " + String(klic));
-  display.display();
+  oled.clearDisplay();
+
+  oledDrawStringFromLeft(0, 0, "IP address: ");
+  oledDrawStringFromLeft(0, 10, WiFi.localIP().toString());
+  oledDrawStringFromLeft(0, 20, " klic: " + String(klic));
+
+
+  oled.display();
+#endif
 
   delay(2000);
 
@@ -264,46 +298,54 @@ strncpy(klic, myMenuItems[0].pdata, sizeof(klic));
 */
   Serial.println(parametryC);
   Serial.println(klic);
-  display.clearDisplay();
 
-  drawStringFromLeft(0, 0, "parametry: ");
-  drawStringFromLeft(0, 10, parametryC);
-
-  display.display();
+#ifdef USE_OLED
+  oled.clearDisplay();
+  oledDrawStringFromLeft(0, 0, "parametry: ");
+  oledDrawStringFromLeft(0, 10, parametryC);
+  oled.display();
+#endif
 
   configTime(1 * 3600, 1 * 3600, "pool.ntp.org", "time.nist.gov");
+
+
+  client.setInsecure();
+  //celaAdresa += "?cisIds=" + idZastavky;
+  celaAdresa += parametryC;
+  //http.useHTTP10(true);
+  
 }
 
-bool jeSpicka(tm *vstup)
-{
-  int hodina=vstup->tm_hour;
-  int den=vstup->tm_wday;
+bool jeSpicka(tm *vstup) {
+  int hodina = vstup->tm_hour;
+  int den = vstup->tm_wday;
 
-  if((hodina>=spickaOd)&&(hodina<spickaDo)&&(den>0)&&(den<6))
-  {
+  if ((hodina >= spickaOd) && (hodina < spickaDo) && (den > 0) && (den < 6)) {
     return true;
   }
   return false;
+}
+
+void clearDisplays() {
+#ifdef USE_OLED
+  oled.clearDisplay();
+#endif
+
+
+#ifdef USE_LCD
+  lcd.clear();
+#endif
 }
 
 void stahni() {
 
   if (WiFi.status() == WL_CONNECTED) {  //Check WiFi connection status
 
-    WiFiClientSecure client;
+
 
     // WiFiClientSecure *client = new WiFiClientSecure;
     //WiFiClientSecure *client = &client2;
-    client.setInsecure();
-
-    HTTPClient http;  //Declare an object of class HTTPClient
-    String celaAdresa = "https://api.golemio.cz/v2/pid/departureboards/";
-    //celaAdresa += "?cisIds=" + idZastavky;
-
-    celaAdresa += parametryC;
-    //http.useHTTP10(true);
     http.begin(client, celaAdresa);
-
     http.addHeader("X-Access-Token", klic);
 
     Serial.println(celaAdresa);
@@ -318,19 +360,18 @@ void stahni() {
       // Serial.println(payload);            //Print the response payload
 
       const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
-      Serial.println(String(capacity));
+      Serial.println("capacity:" + String(capacity));
       //DynamicJsonDocument root(9000);
 
 
-      StaticJsonDocument<200> filter;
-      filter["departures"][0]["departure_timestamp"]["minutes"] = true;
-      filter["departures"][0]["trip"]["headsign"] = true;
-      filter["departures"][0]["route"]["short_name"] = true;
-      Serial.println("Velikost filtru:" + String(filter.size()));
+
+      
+      String httpResult=http.getString();
+      Serial.println(httpResult);
 
 
-
-      DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
+      //DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
+      DeserializationError error = deserializeJson(root, httpResult, DeserializationOption::Filter(filter));
 
       // Test if parsing succeeds.
       if (error) {
@@ -338,17 +379,33 @@ void stahni() {
         Serial.println(error.f_str());
         return;
       }
+      else
+      {
+        Serial.print("json capacity:");
+        Serial.println(root.capacity());
+      }
 
-      display.clearDisplay();
-      lcd.clear();
-      // display.setTextAlignment(TEXT_ALIGN_LEFT);
-      int maxPocetOdjezduOled = 5;
-      int maxPocetOdjezduLcd = 7;
+    
+
+      clearDisplays();
+
+      // oled.setTextAlignment(TEXT_ALIGN_LEFT);
+
+
+#ifdef USE_LCD
+      int lcdMaxPocetOdjezdu = 7;
+#endif
+
+#ifdef USE_OLED
+      int oledMaxPocetOdjezdu = 5;
+
       int cisloRadkuInfo = 5;
       if (vyska32 == 1) {
-        maxPocetOdjezduOled = 2;
+        oledMaxPocetOdjezdu = 2;
         cisloRadkuInfo = 2;
       }
+#endif
+
 
 
 
@@ -364,21 +421,25 @@ void stahni() {
         String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
         String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
         Serial.println(linka + " " + cil + " " + cas);
-//  if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)  
+        //  if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)
         if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
-        //if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
-        //
-        if(true)
-        {
-          if (counter < maxPocetOdjezduOled) {
-            vykresliRadekOdjezduOled(linka, cil, cas, counter);
-          }
-          if (counter < maxPocetOdjezduLcd) {
-            vykresliRadekOdjezduLcd(linka, cil, cas, counter);
-          }
+          //if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
+          //
+          if (true) {
+#ifdef USE_OLED
+            if (counter < oledMaxPocetOdjezdu) {
+              oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+            }
+#endif
 
-          counter++;
-        }
+#ifdef USE_LCD
+            if (counter < lcdMaxPocetOdjezdu) {
+              lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
+            }
+#endif
+
+            counter++;
+          }
       }
 
 
@@ -393,11 +454,11 @@ void stahni() {
       struct tm *timeinfo;
       time(&rawtime);
 
-     
+
 
       timeinfo = localtime(&rawtime);
 
-      filtrNeaktivni=!jeSpicka(timeinfo);
+      filtrNeaktivni = !jeSpicka(timeinfo);
 
 
 
@@ -413,15 +474,21 @@ void stahni() {
       casPrikaz = buffer;
       strftime(buffer, 80, "%u", timeinfo);
       den = buffer;
-      vykresliCas();
 
-    
+
+
+#ifdef USE_LCD
+      lcdVykresliCas();
+#endif
+
       ////////konec casu
 
-      vykresliSpodniRadekDatum(casPrikaz, nahradISO8859(cisloDoDne(den.toInt())), cisloRadkuInfo);
+#ifdef ULE_OLED
+      oledVykresliSpodniRadekDatum(casPrikaz, nahradISO8859(cisloDoDne(den.toInt())), cisloRadkuInfo);
 
-      //display.startscrollleft(6,7);
-      display.display();
+      //oled.startscrollleft(6,7);
+      oled.display();
+#endif
     }
 
     http.end();  //Close connection
@@ -431,21 +498,8 @@ void stahni() {
 }
 
 
-void vykresliCas() {
-  time_t rawtime;
-  struct tm *timeinfo;
-  time(&rawtime);
 
-  timeinfo = localtime(&rawtime);
-  char bufferCas[20];
-  strftime(bufferCas, 20, "%T", timeinfo);
 
-  Serial.println(String(timeinfo->tm_hour)+"::"+String(timeinfo->tm_min));
-
-  lcd.setCursor(12, 3);
-  String jenCas = bufferCas;
-  lcd.print(jenCas);
-}
 
 
 String cisloDoDne(int vstup) {
@@ -462,10 +516,7 @@ String cisloDoDne(int vstup) {
 }
 
 
-void drawStringFromLeft(int sloupec, int radek, String obsah) {
-  display.setCursor(sloupec, radek);
-  display.println(obsah);
-}
+
 
 String nahradISO8859(String vstup) {
   vstup.replace("á", "\xE1");  //c hacek
@@ -504,115 +555,15 @@ String nahradISO8859(String vstup) {
   return vstup;
 }
 
-String doplnNaTriCislice(String vstup) {
-  vstup.trim();
-  while (vstup.length() < 3) {
-    vstup = " " + vstup;
-  }
-  return vstup;
-}
-void vykresliRadekOdjezduOled(String &linka, String &cil, String &cas, int radek) {
-  int sloupecCile = 20;
-  int vyskaRadku = 10;
-  int sloupecCasu = 128;
-  int pravyOkrajCile = 100;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-
-  drawStringFromLeft(0, radek * vyskaRadku, linka);
-  drawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
-  drawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
-}
-
-void vykresliRadekOdjezduLcd(String &linka, String &cil, String &cas, int radek) {
-
-  //display.setTextAlignment(TEXT_ALIGN_LEFT);
-  if (radek < 7) {
-    if (radek < 4) {
-      lcd.setCursor(0, radek);
-
-    } else {
-      lcd.setCursor(11, radek - 4);
-    }
-    lcd.print(doplnNaTriCislice(linka) + "  " + doplnNaTriCislice(cas) + "m");
-  }
-}
-
-
-void vykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int radek) {
-
-  int vyskaRadku = 10;
-  int sloupecCas = 128;
-  int posunPc = 0;
-  int posunNc = 0;
-  int posun = 3;
-
-  int y0 = 64 - vyskaRadku - posun;
-  if (vyska32 == 1) {
-    posun = 1;
-    y0 = 32 - vyskaRadku - posun + 1;
-  }
-
-  display.drawLine(0, y0, sloupecCas, y0, SSD1306_WHITE);
-
-  // display.setTextAlignment(TEXT_ALIGN_LEFT);
-  drawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
-
-
-
-  // display.setTextAlignment(TEXT_ALIGN_RIGHT);
-  drawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
-}
-
-void vykresliSpodniRadekDatum(String &cas, String den, int radek) {
-
-  int vyskaRadku = 10;
-  int sloupecCas = 128;
-  int posunPc = 0;
-  int posunNc = 0;
-  int posun = 3;
 
 
 
 
-  int y0 = 64 - vyskaRadku - posun;
-  if (vyska32 == 1) {
-    posun = 1;
-    y0 = 32 - vyskaRadku - posun + 1;
-  }
-
-  display.drawLine(0, y0, sloupecCas, y0, SSD1306_WHITE);
-
-  //display.setTextAlignment(TEXT_ALIGN_LEFT);
-  drawStringFromLeft(0, radek * vyskaRadku + posun, den);
 
 
 
-  //display.setTextAlignment(TEXT_ALIGN_RIGHT);
-  drawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
-}
 
-void drawCentreString(String &buf, int x, int y) {
-  int16_t x1, y1;
-  uint16_t w, h;
-  display.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
-  display.setCursor(x - w / 2, y);
-  display.print(buf);
-}
 
-void drawStringFromRight(int x, int y, String &buf, bool fill) {
-  int16_t x1, y1;
-  uint16_t w, h;
-  if (fill) {
-    buf = " " + buf;
-    display.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
-    display.fillRect(x - w, y, w, h, SSD1306_BLACK);
-  } else {
-    display.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
-  }
-
-  display.setCursor(x - w, y);
-  display.print(buf);
-}
 
 
 
@@ -632,6 +583,7 @@ void setup() {
 
 
 
+  setupFilter();
 
   setupGolemio();
 }
@@ -675,13 +627,18 @@ void loop() {
   displayCredentialsInLoop();
 #endif*/
 
-  vykresliCas();
-  if (pocitacVterin == 30) {
+#ifdef USE_LCD
+  lcdVykresliCas();
+#endif
+
+  if (pocitacVterin > 10) {
     stahni();
     pocitacVterin = 0;
   }
   pocitacVterin++;
   Serial.println("free heap:");
   Serial.println(ESP.getFreeHeap());
+  Serial.print("pocet vterin: ");
+  Serial.println(String(pocitacVterin));
   delay(1000);
 }

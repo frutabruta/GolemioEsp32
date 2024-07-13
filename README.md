@@ -35,7 +35,11 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20240713_2302
+    - basic version working with DO-IT ESP32 without crashing
+    - swapped LCD library
+    - OLED and LCD parts are separated by '#ifdef'
 - 20231114_1802
-  - modification of documentation
+    - modification of documentation
   
 
