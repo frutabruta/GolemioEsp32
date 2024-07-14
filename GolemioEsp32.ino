@@ -16,7 +16,7 @@ based on ESP_WiFiManager_Lite example
 
 //#define USE_OLED 1
 #define USE_LCD 1
-//#define DEBUGGING 1
+#define DEBUGGING 1
 
 
 
@@ -107,10 +107,21 @@ StaticJsonDocument<200> filter;
 //////////////// http client
 //https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
 HTTPClient http;  //Declare an object of class HTTPClient
-String celaAdresa = "https://api.golemio.cz/v2/pid/departureboards/";
+String celaAdresa = "https://api.golemio.cz/v2/public/departureboards/";
 WiFiClientSecure client;
 ////////////////////////////////////// funkce WifiManager
 
+void setupFilter() {
+  //filter public
+  filter[0][0]["departure"]["minutes"] = true;
+  filter[0][0]["trip"]["headsign"] = true;
+  filter[0][0]["route"]["short_name"] = true;
+  Serial.print("Velikost filtru:");
+  Serial.println(String(filter.size()));
+}
+
+
+/* filter pid
 void setupFilter()
 {
 filter["departures"][0]["departure_timestamp"]["minutes"] = true;
@@ -119,6 +130,7 @@ filter["departures"][0]["route"]["short_name"] = true;
 Serial.print("Velikost filtru:");
 Serial.println(String(filter.size()));
 }
+*/
 
 void heartBeatPrint() {
   static int num = 1;
@@ -308,7 +320,6 @@ strncpy(klic, myMenuItems[0].pdata, sizeof(klic));
   //celaAdresa += "?cisIds=" + idZastavky;
   celaAdresa += parametryC;
   //http.useHTTP10(true);
-  
 }
 
 bool jeSpicka(tm *vstup) {
@@ -359,18 +370,18 @@ void stahni() {
       //DynamicJsonDocument root(9000);
 
 
-      
-      
-      String httpResult=http.getString();
-      #ifdef DEBUGGING
+
+
+      String httpResult = http.getString();
+#ifdef DEBUGGING
       Serial.println(httpResult);
-      #endif
-/*
+#endif
+      /*
       to use http stream ChunkDecodingStream may help
     https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
 DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
 */
-      
+
       DeserializationError error = deserializeJson(root, httpResult, DeserializationOption::Filter(filter));
 
       // Test if parsing succeeds.
@@ -378,16 +389,14 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
         Serial.print(F("deserializeJson() failed: "));
         Serial.println(error.f_str());
         return;
-      }
-      else
-      {
+      } else {
         Serial.print("json capacity:");
         Serial.println(root.capacity());
       }
 
-    
 
-   //   clearDisplays();
+
+      //   clearDisplays();
 
       // oled.setTextAlignment(TEXT_ALIGN_LEFT);
 
@@ -409,18 +418,18 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
 
 
-      int arraySize = root["departures"].size();
+      int arraySize = root[0].size();
       Serial.println("pocet odjezdu:" + String(arraySize));
 
       int counter = 0;
 
       for (int i = 0; (i < arraySize); i++) {
-        // Serial.println("pruchod "+String(i));
-
-        String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
-        String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
-        String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
-        Serial.println(linka + " " + cil + " " + cas);
+        Serial.println("pruchod " + String(i));
+        Serial.println("pocetElementu " + String(root[0][i].size()));
+        String cas = String(root[0][i]["departure"]["minutes"]);
+        String linka = root[0][i]["route"]["short_name"].as<const char *>();
+        String cil = root[0][i]["trip"]["headsign"].as<const char *>();
+        Serial.println("spoj: " + linka + " " + cil + " " + cas);
         //  if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)
 
         if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
@@ -437,10 +446,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
             lcdVymazRadekOdjezdu(counter);
             if (counter < lcdMaxPocetOdjezdu) {
               lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
-            }
-            else
-            {
-              
+            } else {
             }
 #endif
 
@@ -644,14 +650,14 @@ void loop() {
   }
   pocitacVterin++;
 
-  #ifdef DEBUGGING
-    Serial.println("free heap:");
-    Serial.println(ESP.getFreeHeap());
-    Serial.print("pocet vterin: ");
-    Serial.println(String(pocitacVterin));
-  #endif
+#ifdef DEBUGGING
+  Serial.println("free heap:");
+  Serial.println(ESP.getFreeHeap());
+  Serial.print("pocet vterin: ");
+  Serial.println(String(pocitacVterin));
+#endif
 
-  #ifdef USE_LCD
+#ifdef USE_LCD
   lcdVykresliCas();
 #endif
   delay(1000);
