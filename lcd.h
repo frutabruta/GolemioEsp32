@@ -45,5 +45,19 @@ void lcdVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek)
   }
 }
 
+void lcdVymazRadekOdjezdu(int radek) {
+
+  //oled.setTextAlignment(TEXT_ALIGN_LEFT);
+  if (radek < 7) {
+    if (radek < 4) {
+      lcd.setCursor(0, radek);
+
+    } else {
+      lcd.setCursor(11, radek - 4);
+    }
+    lcd.print("        ");
+  }
+}
+
 
 #endif

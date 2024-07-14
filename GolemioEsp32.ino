@@ -12,6 +12,13 @@ based on ESP_WiFiManager_Lite example
 
 */
 
+//compile parameters
+
+//#define USE_OLED 1
+#define USE_LCD 1
+//#define DEBUGGING 1
+
+
 
 #include <Wire.h>
 
@@ -32,12 +39,18 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
+
 
 //MH-ET LIVE ESP32 MiniKIT
 /*
 #define D4 17 
 #define D3 16 
 */
+
+
+
+
 
 //DOIT ESP32
 
@@ -53,32 +66,12 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 
 
 
-#include <ArduinoJson.h>
-
-
-
-
-//#define USE_OLED 1
-#define USE_LCD 1
-
-
-
-
-
 #ifdef USE_LCD
-
 #include "lcd.h"
-
 #endif
-int pocitacVterin = 30;
-
 
 #ifdef USE_OLED
-
 #include "oled.h"
-//uprava knihovny: https://forum.hwkitchen.cz/viewtopic.php?t=2503
-//Adafruit GFX:
-
 #endif
 
 
@@ -97,11 +90,13 @@ const int spickaDo=9;
 const int spickaOd = 7;
 const int spickaDo = 9;
 
+int pocitacVterin = 30;
+
 String idZastavky = "58791";  //58762 balabenka
 String parametry = "";
 char parametryC[200] = "?cisIds=58791&minutesBefore=1&minutesAfter=60&limit=30&mode=departures&includeMetroTrains=true&order=real";
 
-String retezec = "";
+
 bool filtrNeaktivni = true;
 
 
@@ -109,8 +104,8 @@ DynamicJsonDocument root(9000);
 
 StaticJsonDocument<200> filter;
 
-
-
+//////////////// http client
+//https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
 HTTPClient http;  //Declare an object of class HTTPClient
 String celaAdresa = "https://api.golemio.cz/v2/pid/departureboards/";
 WiFiClientSecure client;
@@ -364,13 +359,18 @@ void stahni() {
       //DynamicJsonDocument root(9000);
 
 
-
+      
       
       String httpResult=http.getString();
+      #ifdef DEBUGGING
       Serial.println(httpResult);
-
-
-      //DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
+      #endif
+/*
+      to use http stream ChunkDecodingStream may help
+    https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
+DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
+*/
+      
       DeserializationError error = deserializeJson(root, httpResult, DeserializationOption::Filter(filter));
 
       // Test if parsing succeeds.
@@ -387,7 +387,7 @@ void stahni() {
 
     
 
-      clearDisplays();
+   //   clearDisplays();
 
       // oled.setTextAlignment(TEXT_ALIGN_LEFT);
 
@@ -422,6 +422,7 @@ void stahni() {
         String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
         Serial.println(linka + " " + cil + " " + cas);
         //  if ((linka == "133") || (linka == "908") || (linka == "909") || filtrNeaktivni)
+
         if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
           //if ((linka == "133") || filtrNeaktivni)  //vyresit lepe!
           //
@@ -433,8 +434,13 @@ void stahni() {
 #endif
 
 #ifdef USE_LCD
+            lcdVymazRadekOdjezdu(counter);
             if (counter < lcdMaxPocetOdjezdu) {
               lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
+            }
+            else
+            {
+              
             }
 #endif
 
@@ -586,6 +592,7 @@ void setup() {
   setupFilter();
 
   setupGolemio();
+  clearDisplays();
 }
 
 #if USE_DYNAMIC_PARAMETERS
@@ -636,9 +643,16 @@ void loop() {
     pocitacVterin = 0;
   }
   pocitacVterin++;
-  Serial.println("free heap:");
-  Serial.println(ESP.getFreeHeap());
-  Serial.print("pocet vterin: ");
-  Serial.println(String(pocitacVterin));
+
+  #ifdef DEBUGGING
+    Serial.println("free heap:");
+    Serial.println(ESP.getFreeHeap());
+    Serial.print("pocet vterin: ");
+    Serial.println(String(pocitacVterin));
+  #endif
+
+  #ifdef USE_LCD
+  lcdVykresliCas();
+#endif
   delay(1000);
 }
