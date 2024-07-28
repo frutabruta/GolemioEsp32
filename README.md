@@ -1,6 +1,11 @@
 # GolemioEsp32 #
 
-Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. THis version uses public API no requiring an API key.
+Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. This version uses public API no requiring an API key.
+Tested board is DOIT ESP32 DEVKIT V1.
+ESP8266 compatibility not tested at the moment.
+
+[<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
+[<img src="images/oled128x64.jpg" width="300px"/>](images/oled128x64.jpg?raw=true "128x64 OLED screen")
 ## Required libraries ##
 
 ESP_WiFiManager_Lite
@@ -10,6 +15,7 @@ https://github.com/khoih-prog/ESP_WiFiManager_Lite
 Arduino-LiquidCrystal-I2C-library 1.1.2
 https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 LiquidCrystal_I2C.h
+
 
 
 LiquicCrystal I2C MultiLingual by Loc P.LE 2.0.2
@@ -23,6 +29,8 @@ Modification of adafruit gfx to support czech characters on 128x64 OLED screen:
 https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
+
+
 ## Setup ##
 
 - modify the code
@@ -30,7 +38,6 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
     - to use 128x64 OLED ucomment ```#define USE_OLED 1```
 
 - upload code
-- generate Golemio API key at  api.golemio.cz/api-keys
 - double press the reset button on the ESP32
 - connect to WI-FI hotspot created by ESP32 
     - password and SSID should be shown on the display
@@ -42,6 +49,8 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20240728_2135
+    - added images to description
 - 20240728_2059
     - fix OLED screen clear code
 - 20240728_2001
