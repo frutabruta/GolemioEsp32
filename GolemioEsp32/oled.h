@@ -17,17 +17,56 @@ const int vyska32 = 0;
 
 
 
-void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek) {
-  int sloupecCile = 20;
-  int vyskaRadku = 10;
-  int sloupecCasu = 128;
-  int pravyOkrajCile = 100;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+String nahradISO8859(String vstup) {
+  vstup.replace("á", "\xE1");  //c hacek
+  vstup.replace("Á", "\xC1");  //C hacek
+  vstup.replace("č", "\xE8");  //c hacek
+  vstup.replace("Č", "\xC8");  //C hacek
+  vstup.replace("ď", "\xEF");  //d hacek
+  vstup.replace("Ď", "\xCF");  //D hacek
 
-  oledDrawStringFromLeft(0, radek * vyskaRadku, linka);
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
-  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
+  vstup.replace("é", "\xE9");  //
+
+  vstup.replace("É", "\xC9");
+  vstup.replace("ě", "\xEC");  //e hacek
+  vstup.replace("Ě", "\xCC");
+  vstup.replace("í", "\xED");  //dlouhe i
+  vstup.replace("Í", "\xCD");  //dlouhe I
+  vstup.replace("ň", "\xF2");
+  vstup.replace("Ň", "\xD2");
+  vstup.replace("ó", "\xF3");
+  vstup.replace("Ó", "\xD3");
+  vstup.replace("ř", "\xF8");
+  vstup.replace("Ř", "\xD8");
+  vstup.replace("š", "\xB9");
+  vstup.replace("Š", "\xA9");
+  vstup.replace("ť", "\xBB");
+  vstup.replace("Ť", "\xAB");
+  vstup.replace("ú", "\xFA");
+  vstup.replace("Ú", "\xDA");
+  vstup.replace("ů", "\xF9");
+  vstup.replace("Ů", "\xD9");
+  vstup.replace("ý", "\xFD");
+  vstup.replace("Ý", "\xDD");
+  vstup.replace("ž", "\xBE");
+  vstup.replace("Ž", "\xAE");
+
+  return vstup;
 }
+
+String  cisloDoDne(int vstup) {
+  String vystup = "";
+
+
+  if ((vstup < 0) || (vstup > 7)) {
+    return "";
+  }
+
+  vystup = poleDnu[vstup];
+
+  return vystup;
+}
+
 
 
 void oledDrawCentreString(String &buf, int x, int y) {
@@ -51,6 +90,22 @@ void oledDrawStringFromRight(int x, int y, String &buf, bool fill) {
 
   oled.setCursor(x - w, y);
   oled.print(buf);
+}
+void oledDrawStringFromLeft(int sloupec, int radek, String obsah) {
+  oled.setCursor(sloupec, radek);
+  oled.println(obsah);
+}
+
+void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek) {
+  int sloupecCile = 20;
+  int vyskaRadku = 10;
+  int sloupecCasu = 128;
+  int pravyOkrajCile = 100;
+  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+
+  oledDrawStringFromLeft(0, radek * vyskaRadku, linka);
+  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
+  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
 }
 
 void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
@@ -81,10 +136,7 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
 }
 
-void oledDrawStringFromLeft(int sloupec, int radek, String obsah) {
-  oled.setCursor(sloupec, radek);
-  oled.println(obsah);
-}
+
 
 
 void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int radek) {

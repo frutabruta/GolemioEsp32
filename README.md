@@ -1,6 +1,6 @@
 # GolemioEsp32 #
 
-Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display.
+Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. THis version uses public API no requiring an API key.
 ## Required libraries ##
 
 ESP_WiFiManager_Lite
@@ -12,6 +12,10 @@ https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 LiquidCrystal_I2C.h
 
 
+LiquicCrystal I2C MultiLingual by Loc P.LE 2.0.2
+https://github.com/locple/LCDI2C_Multilingual
+
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -20,6 +24,10 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Setup ##
+
+- modify the code
+    - to use 20x4 LCD uncomment ```#define USE_LCD 1```
+    - to use 128x64 OLED ucomment ```#define USE_OLED 1```
 
 - upload code
 - generate Golemio API key at  api.golemio.cz/api-keys
@@ -30,11 +38,16 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 - open the Configuration page
     - enter your WI-FI credentials
     - modify Golemio request parameters according to https://api.golemio.cz/pid/docs/openapi/
-    - split the API key in two equally long parts and enter them to the configuration pagen
     - click on Save
 
 
 ## Changelog ##
+- 20240728_2059
+    - fix OLED screen clear code
+- 20240728_2001
+    - code cleanup
+- 20240714_1205 
+    - first running example of key-less public API
 - 20240714_1025
     - added constant to disable debugging output
     - LCD
