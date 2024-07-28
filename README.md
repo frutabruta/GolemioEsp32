@@ -21,6 +21,10 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 ## Setup ##
 
+- modify the code
+    - to use 20x4 LCD uncomment ```#define USE_LCD 1```
+    - to use 128x64 OLED ucomment ```#define USE_OLED 1```
+
 - upload code
 - generate Golemio API key at  api.golemio.cz/api-keys
 - double press the reset button on the ESP32
@@ -35,6 +39,8 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20240728_2059
+    - fix OLED screen clear code
 - 20240728_2001
     - code cleanup
 - 20240714_1205 

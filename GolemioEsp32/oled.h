@@ -54,18 +54,19 @@ String nahradISO8859(String vstup) {
   return vstup;
 }
 
+String  cisloDoDne(int vstup) {
+  String vystup = "";
 
-void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek) {
-  int sloupecCile = 20;
-  int vyskaRadku = 10;
-  int sloupecCasu = 128;
-  int pravyOkrajCile = 100;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
 
-  oledDrawStringFromLeft(0, radek * vyskaRadku, linka);
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
-  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
+  if ((vstup < 0) || (vstup > 7)) {
+    return "";
+  }
+
+  vystup = poleDnu[vstup];
+
+  return vystup;
 }
+
 
 
 void oledDrawCentreString(String &buf, int x, int y) {
@@ -89,6 +90,22 @@ void oledDrawStringFromRight(int x, int y, String &buf, bool fill) {
 
   oled.setCursor(x - w, y);
   oled.print(buf);
+}
+void oledDrawStringFromLeft(int sloupec, int radek, String obsah) {
+  oled.setCursor(sloupec, radek);
+  oled.println(obsah);
+}
+
+void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek) {
+  int sloupecCile = 20;
+  int vyskaRadku = 10;
+  int sloupecCasu = 128;
+  int pravyOkrajCile = 100;
+  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+
+  oledDrawStringFromLeft(0, radek * vyskaRadku, linka);
+  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
+  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
 }
 
 void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
@@ -119,10 +136,7 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
 }
 
-void oledDrawStringFromLeft(int sloupec, int radek, String obsah) {
-  oled.setCursor(sloupec, radek);
-  oled.println(obsah);
-}
+
 
 
 void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int radek) {

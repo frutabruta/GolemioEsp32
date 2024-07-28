@@ -54,6 +54,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
 #ifdef USE_OLED
   int oledMaxPocetOdjezdu = 5;
+  oled.clearDisplay();
 
   int cisloRadkuInfo = 5;
   if (vyska32 == 1) {

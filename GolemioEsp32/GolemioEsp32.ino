@@ -14,8 +14,13 @@ based on ESP_WiFiManager_Lite example
 
 //compile parameters
 
+//uncomment to use 128x64 I2C OLED on address 0x3C with SSD1306 driver
 //#define USE_OLED 1
+
+//uncomment to use 20x4 I2C LCD on address 0x3F
 #define USE_LCD 1
+
+
 //#define DEBUGGING 1
 
 
@@ -359,18 +364,7 @@ void stahni()
 
 
 
-String  cisloDoDne(int vstup) {
-  String vystup = "";
 
-
-  if ((vstup < 0) || (vstup > 7)) {
-    return "";
-  }
-
-  vystup = poleDnu[vstup];
-
-  return vystup;
-}
 
 
 
