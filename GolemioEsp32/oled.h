@@ -17,6 +17,44 @@ const int vyska32 = 0;
 
 
 
+String nahradISO8859(String vstup) {
+  vstup.replace("á", "\xE1");  //c hacek
+  vstup.replace("Á", "\xC1");  //C hacek
+  vstup.replace("č", "\xE8");  //c hacek
+  vstup.replace("Č", "\xC8");  //C hacek
+  vstup.replace("ď", "\xEF");  //d hacek
+  vstup.replace("Ď", "\xCF");  //D hacek
+
+  vstup.replace("é", "\xE9");  //
+
+  vstup.replace("É", "\xC9");
+  vstup.replace("ě", "\xEC");  //e hacek
+  vstup.replace("Ě", "\xCC");
+  vstup.replace("í", "\xED");  //dlouhe i
+  vstup.replace("Í", "\xCD");  //dlouhe I
+  vstup.replace("ň", "\xF2");
+  vstup.replace("Ň", "\xD2");
+  vstup.replace("ó", "\xF3");
+  vstup.replace("Ó", "\xD3");
+  vstup.replace("ř", "\xF8");
+  vstup.replace("Ř", "\xD8");
+  vstup.replace("š", "\xB9");
+  vstup.replace("Š", "\xA9");
+  vstup.replace("ť", "\xBB");
+  vstup.replace("Ť", "\xAB");
+  vstup.replace("ú", "\xFA");
+  vstup.replace("Ú", "\xDA");
+  vstup.replace("ů", "\xF9");
+  vstup.replace("Ů", "\xD9");
+  vstup.replace("ý", "\xFD");
+  vstup.replace("Ý", "\xDD");
+  vstup.replace("ž", "\xBE");
+  vstup.replace("Ž", "\xAE");
+
+  return vstup;
+}
+
+
 void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek) {
   int sloupecCile = 20;
   int vyskaRadku = 10;

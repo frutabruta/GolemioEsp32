@@ -107,11 +107,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   struct tm *timeinfo;
   time(&rawtime);
 
-
-
   timeinfo = localtime(&rawtime);
-
-
 
 
 

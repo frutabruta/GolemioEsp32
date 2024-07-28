@@ -35,6 +35,8 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20240728_2001
+    - code cleanup
 - 20240714_1205 
     - first running example of key-less public API
 - 20240714_1025

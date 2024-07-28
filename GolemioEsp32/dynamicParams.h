@@ -44,18 +44,11 @@
 
 char golemioParametry [MAX_GOLEMIO_PARAMETRY_LEN+1]= "?stopIds[]={\"0\":[\"U511Z1P\"]}&limit=2";
 
-/*
-char golemioToken1  [MAX_GOLEMIO_TOKEN_LEN+1]= "?minutesBefore=1&minutesAfter=360&limit=1&mode=departures&filter=none&order=real&skip=canceled&aswIds=548_2";
-char golemioToken2  [MAX_GOLEMIO_TOKEN_LEN+1]= "?minutesBefore=1&minutesAfter=360&limit=1&mode=departures&filter=none&order=real&skip=canceled&aswIds=548_2";
-*/
 
 MenuItem myMenuItems [] =
 {
     { "gop", "Parametry",   golemioParametry,    MAX_GOLEMIO_PARAMETRY_LEN}
-    /*,
-  { "go1", "Token",   golemioToken1,    MAX_GOLEMIO_TOKEN_LEN },
-  { "go2", "Token",   golemioToken2,    MAX_GOLEMIO_TOKEN_LEN },
-  */
+
 };
 
 uint16_t NUM_MENU_ITEMS = sizeof(myMenuItems) / sizeof(MenuItem);  //MenuItemSize;
