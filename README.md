@@ -1,6 +1,9 @@
-# GolemioEsp32 #
+# GolemioEsp32 - abandoned branch#
 
 Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display.
+
+Abandoned version requiring API key.
+
 ## Required libraries ##
 
 ESP_WiFiManager_Lite
