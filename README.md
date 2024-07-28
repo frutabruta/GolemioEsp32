@@ -1,6 +1,6 @@
 # GolemioEsp32 #
 
-Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display.
+Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. THis version uses public API no requiring an API key.
 ## Required libraries ##
 
 ESP_WiFiManager_Lite
@@ -10,6 +10,10 @@ https://github.com/khoih-prog/ESP_WiFiManager_Lite
 Arduino-LiquidCrystal-I2C-library 1.1.2
 https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 LiquidCrystal_I2C.h
+
+
+LiquicCrystal I2C MultiLingual by Loc P.LE 2.0.2
+https://github.com/locple/LCDI2C_Multilingual
 
 
 #include <Adafruit_GFX.h>
@@ -34,7 +38,6 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 - open the Configuration page
     - enter your WI-FI credentials
     - modify Golemio request parameters according to https://api.golemio.cz/pid/docs/openapi/
-    - split the API key in two equally long parts and enter them to the configuration pagen
     - click on Save
 
 
