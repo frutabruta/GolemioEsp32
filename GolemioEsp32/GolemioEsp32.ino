@@ -5,11 +5,31 @@ VCC - VCC
 GND - GND
 SDA - IO16
 SCL - IO17
+
+
+DOIT ESP32 DEV KIT
+VCC - VIN
+GND - GND
+SDA - D21
+SCL - D22
+
+
+NodeMCU ESP8266 - now unsupported, works only for 2 departures (cannot decode gzip) 
+VCC - 3V3
+GND - GND
+SDA - D2
+SCL - D1
 */
 /*
 based on ESP_WiFiManager_Lite example
   ESP_WiFiManager_Lite (https://github.com/khoih-prog/ESP_WiFiManager_Lite) is a library 
 
+*/
+
+/* for future gzip usage
+ESP32-targz Tobozo
+1.2.3
+https://github.com/tobozo/ESP32-targz
 */
 
 //compile parameters
@@ -26,7 +46,7 @@ based on ESP_WiFiManager_Lite example
 
 
 #include <Wire.h>
-
+#include <ArduinoJson.h>
 
 /////////////////////////////////////////  definice WifiMAnager
 #include "defines.h"
@@ -44,13 +64,13 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-#include <ArduinoJson.h>
+
 
 
 //MH-ET LIVE ESP32 MiniKIT
 /*
-#define D4 17 
-#define D3 16 
+#define SDA 16 
+#define SCL 17 
 */
 
 
@@ -59,14 +79,14 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 
 //DOIT ESP32
 
-#define D4 21
-#define D3 22
+
 
 #endif
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <WiFiClientSecureBearSSL.h>
 #endif
 
 
@@ -230,28 +250,20 @@ void setupGolemio() {
   lcd.print("Connecting");
 #endif
 
-
-
-
   Serial.println("DP3");
   Serial.println("displej bezi na SCL:" + String(SCL) + " SDA:" + String(SDA));
-  Serial.println("displej bezi na SCL:" + String(D4) + " SDA:" + String(D3));
+  //Serial.println("displej bezi na SCL:" + String(D4) + " SDA:" + String(D3));
   Serial.println("DP4");
-
 
   Serial.println("connected...yeey :)");
 
-
-  Serial.println("");
-#ifdef USE_OLED Serial.println("WiFi connected");
+#ifdef USE_OLED 
+  Serial.println("WiFi connected");
 
   oled.clearDisplay();
-
   oledDrawStringFromLeft(0, 0, "IP address: ");
   oledDrawStringFromLeft(0, 10, WiFi.localIP().toString());
   oledDrawStringFromLeft(0, 20, " klic: " + String(klic));
-
-
   oled.display();
 #endif
 
@@ -261,26 +273,8 @@ void setupGolemio() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   Serial.println("po padu");
-  // Lets deal with the user config values
-
-  // Copy the string value
-  /*
- parametryC=myMenuItems[0].pdata;
-  klic=myMenuItems[1].pdata;
-*/
-
-
-
 
   strcpy(parametryC, myMenuItems[0].pdata);
-  /*
-strncpy(klic, myMenuItems[0].pdata, sizeof(klic));
-  strncpy(parametryC, myMenuItems[1].pdata, sizeof(parametryC));
- */
-  /*
-  strncpy(klic, custom_text_box.getValue(), sizeof(klic));
-  strncpy(parametryC, custom_text_box2.getValue(), sizeof(parametryC));
-*/
   Serial.println(parametryC);
 
 #ifdef USE_OLED
@@ -292,9 +286,6 @@ strncpy(klic, myMenuItems[0].pdata, sizeof(klic));
 
   configTime(1 * 3600, 1 * 3600, "pool.ntp.org", "time.nist.gov");
 
-
-
-  //celaAdresa += "?cisIds=" + idZastavky;
   celaAdresa += parametryC;
   //http.useHTTP10(true);
 }
@@ -325,14 +316,29 @@ void stahni()
 
   if (WiFi.status() == WL_CONNECTED) 
   {  //Check WiFi connection status
-  
-    NetworkClientSecure *client = new NetworkClientSecure;
+
+  #ifdef ESP8266
+  std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
+  #endif
+
+  #ifdef ESP32
+  NetworkClientSecure *client = new NetworkClientSecure;
+  #endif
+    
     client->setInsecure();
     if (client) 
     {
       HTTPClient http; 
       http.begin(*client, celaAdresa);
+
+      #ifdef ESP32
       http.setAcceptEncoding("identity");
+      #endif
+
+      #ifdef ESP8266
+      http.addHeader("Accept-Encoding", "identity"); //doesn't work
+      #endif
+
       Serial.println(celaAdresa);
 
 
@@ -353,7 +359,10 @@ void stahni()
       }
 
       http.end();  //Close connection
+
+      #ifdef ESP32
       delete client;
+      #endif
     }
   }
 

@@ -1,6 +1,6 @@
 void handleResponse(HTTPClient &http) {
-  const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
-  Serial.println("capacity:" + String(capacity));
+ // const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
+ // Serial.println("capacity:" + String(capacity));
   //DynamicJsonDocument root(9000);
 
 

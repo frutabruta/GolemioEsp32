@@ -2,7 +2,7 @@
 
 Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. This version uses public API no requiring an API key.
 Tested board is DOIT ESP32 DEVKIT V1.
-ESP8266 compatibility not tested at the moment.
+ESP8266 doesn't work with more than two departures (problem with gzip encoding in golemio API).
 
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
 [<img src="images/oled128x64.jpg" width="300px"/>](images/oled128x64.jpg?raw=true "128x64 OLED screen")
@@ -49,6 +49,8 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20240728_2250
+    - can be compiled to ESP8266, works only with 2 departures
 - 20240728_2135
     - added images to description
 - 20240728_2059
