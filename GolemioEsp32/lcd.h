@@ -55,7 +55,7 @@ void lcdVymazRadekOdjezdu(int radek) {
     } else {
       lcd.setCursor(11, radek - 4);
     }
-    lcd.print("        ");
+    lcd.print("         ");
   }
 }
 

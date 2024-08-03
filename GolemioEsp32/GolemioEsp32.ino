@@ -221,7 +221,23 @@ void setupManager() {
 ////////////////////////////////////////////////////////// funkce golemio
 
 
+void vypisChybuNaDispleje(String text)
+{
+  #ifdef USE_LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(text);
+  #endif
 
+  #ifdef USE_OLED
+   oled.clearDisplay();
+   oled.setCursor(0, 0);
+  oled.println(text);
+  oled.display();
+  #endif
+
+  Serial.println("error: "+text);
+}
 
 void setupGolemio() {
   Serial.println("void setupGolemio()");
@@ -352,7 +368,8 @@ void stahni()
             handleResponse(http);
           break;
           default:
-          Serial.println("chyba http, kod:"+String(httpCode));
+          vypisChybuNaDispleje("chyba http: "+String(httpCode));
+         
           break;
         }
         
@@ -364,6 +381,10 @@ void stahni()
       delete client;
       #endif
     }
+  }
+  else
+  {
+    vypisChybuNaDispleje("wifi nepripojeno");
   }
 
   //delay(30000);  //Send a request every 30 seconds

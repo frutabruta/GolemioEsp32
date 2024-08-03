@@ -49,6 +49,9 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20240803_1310
+    - wifi not connected on display
+    - overwriting unused rows when numbr of departures is smaller than number of available rows
 - 20240728_2250
     - can be compiled to ESP8266, works only with 2 departures
 - 20240728_2135

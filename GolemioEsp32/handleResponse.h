@@ -90,16 +90,28 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
     if (counter < lcdMaxPocetOdjezdu) {
       lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
     } else {
+     
     }
+
+
 #endif
 
     counter++;
   }
 
 
+  if(arraySize<lcdMaxPocetOdjezdu)
+  {
+    for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
+    {
+      lcdVymazRadekOdjezdu(j);
+    }
+  }
 
 
-  String casPrikaz = "0:48";
+
+
+  String casPrikaz = "0:00";
   String den = "";
 
   //////// cas
