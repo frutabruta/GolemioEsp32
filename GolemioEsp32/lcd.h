@@ -4,7 +4,7 @@
 //LiquidCrystal_I2C lcd(0x27, 20, 4);  //modry 0x27
 //LiquidCrystal_I2C lcd(0x3F, 20, 4); //zeleny 0x3F
 #include <LCDI2C_Multilingual.h> //LiquicCrystal I2C MultiLingual by Loc P.LE 2.0.2
-LCDI2C_Generic lcd(0x3f, 20, 4);
+LCDI2C_Generic lcd(0x27, 20, 4);
 
 void lcdVykresliCas() {
   time_t rawtime;
@@ -15,7 +15,7 @@ void lcdVykresliCas() {
   char bufferCas[20];
   strftime(bufferCas, 20, "%T", timeinfo);
 
-  Serial.println(String(timeinfo->tm_hour) + ":" + String(timeinfo->tm_min));
+ // Serial.println(String(timeinfo->tm_hour) + ":" + String(timeinfo->tm_min));
 
   lcd.setCursor(12, 3);
   String jenCas = bufferCas;
