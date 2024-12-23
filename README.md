@@ -34,20 +34,41 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 - NEEDS TO BE MODIFIED
 - modify the code
     - to use 20x4 LCD uncomment ```#define USE_LCD 1```
-    - to use 128x64 OLED ucomment ```#define USE_OLED 1```
+    - to use 128x64 OLED uncomment ```#define USE_OLED 1```
 
 - upload code
-- double press the reset button on the ESP32
+
 - connect to WI-FI hotspot created by ESP32 
     - password and SSID should be shown on the display
     - GolemioDisplay, password
 - open the Configuration page
     - enter your WI-FI credentials
     - modify Golemio request parameters according to https://api.golemio.cz/pid/docs/openapi/
+    - add Golemio API key
     - click on Save
+- if you want to change parameters in the future, press the FLASH/BOOT button on the ESP32 or external button to create Wi-Fi hotspot again
+
+- Wireless update using tzapu webmanager works
+    - export binary using Arduino IDE - Sketch -> Export compiled binary
+        - it is the sketch_folder/build/board_name/GolemioEsp32.ino.bin
+    - start webportal on ESP by pressing a button
+    - Android
+        - transport compliled binary to the phone/tablet
+        - connect to GolemioSetup Wi-Fi
+        - on the captive portal select three dots - use network as is
+        - in web browser navigate to 192.168.4.1
+        - select updatee in menu
+        - wait for update finished message
+
 
 
 ## Changelog ##
+- 20241224_1532
+    - added LaskaKit ESP32-C3-LPKit support
+    - readme.md manual modification
+    - wifiName changed to GolemioSetup
+    - LPkit enable uSup power after boot
+
 - 20241215_1911
     - migrated to tzapu wifi manager, now stable
     - added golemio key back, because even publci API now requires API key

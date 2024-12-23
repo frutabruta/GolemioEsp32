@@ -24,6 +24,24 @@ SCL - D1
 */
 
 
+/*
+LaskaKit ESP32-C3-LPKit
+Set DFRobot Beetle ESP32-C3 in Arduino IDE
+Enable USB CDC on boot
+use default partition scheme with spiffs
+
+Enable Erase all flash before  upload to solve the partition issue
+
+to flash enter bootloader - hold FLASH button, shortly press RESET, release FLASH button
+
+
+replug board after upload 
+
+
+
+to update use .ino.bin file (approx. 1,23 MByte in size)
+*/
+
 
 /** BASED ON
  * WiFiManager advanced demo, contains advanced configurartion options
@@ -36,8 +54,34 @@ bool wm_nonblocking = false;        // change to true to use non blocking
                // global wm instance
   WiFiManager wm;  
 
- 
-#define TRIGGER_PIN 0
+
+//select one board
+
+ //MH-ET LIVE ESP32 MiniKIT
+//#define MHET 1
+
+//LaskaKit ESP32-C3-LPkit
+#define LPKITC3 1
+
+#ifdef MHET
+  #define TRIGGER_PIN 27 //MH-ET Mini  
+  #define SDA 16 
+  #define SCL 17 
+#elif  LPKITC3
+  #define SDA 8
+  #define SCL 10
+  #define TRIGGER_PIN 9 //DOIT ESP32 DEVKIT
+  #define USUP_POWER 4   
+
+#else
+  #define SDA 16 
+  #define SCL 17 
+  #define TRIGGER_PIN 0 //DOIT ESP32 DEVKIT
+#endif
+
+
+
+
 
 /* for future gzip usage
 ESP32-targz Tobozo
@@ -94,11 +138,9 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 
 
 
-//MH-ET LIVE ESP32 MiniKIT
-/*
-#define SDA 16 
-#define SCL 17 
-*/
+
+
+
 
 
 
@@ -244,7 +286,7 @@ void checkButton() {
       vypisChybuNaDispleje("startuju konfiguracni portal");
       wm.setConfigPortalTimeout(120);
 
-      if (!wm.startConfigPortal("OnDemandAP", "password")) {
+      if (!wm.startConfigPortal("GolemioSetup", "password")) {
         Serial.println("failed to connect or hit timeout");
         vypisChybuNaDispleje("nepovedlo se pripojit nebo timeout");
         delay(3000);
@@ -308,6 +350,14 @@ void vypisChybuNaDispleje(String text) {
 
 void setupDisplay()
 {
+  Serial.println("setupDisplay");
+  
+  #ifdef LPKITC3
+    pinMode(USUP_POWER, OUTPUT); 
+  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+  #endif
+
+
     Wire.begin(SDA, SCL);
 
 #ifdef USE_OLED
@@ -581,7 +631,12 @@ void setupManager() {
   
   Serial.println("\n Starting");
 vypisChybuNaDispleje("web manager start");
+  
+  #ifdef MHET
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+  #else
   pinMode(TRIGGER_PIN, INPUT);
+  #endif
 
 
   //if (wm_nonblocking) wm.setConfigPortalBlocking(false); 
@@ -604,7 +659,7 @@ vypisChybuNaDispleje("web manager start");
   wm.setClass("invert");
 
 
- if (!wm.autoConnect("AutoConnectAP", "password")) {
+ if (!wm.autoConnect("GolemioSetup", "password")) {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
