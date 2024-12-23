@@ -13,6 +13,9 @@
 #define SCREEN_ADDRESS 0x3C  ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+#define BIGOLED 1 //if using SSD1309 2.42" from LaskaKit to replace Czech characters
+
+
 const int vyska32 = 0;
 
 
@@ -54,6 +57,43 @@ String nahradISO8859(String vstup) {
   return vstup;
 }
 
+String nahradDiakritiku(String vstup) {
+  vstup.replace("á", "a");  //c hacek
+  vstup.replace("Á", "A");  //C hacek
+  vstup.replace("č", "c");  //c hacek
+  vstup.replace("Č", "C");  //C hacek
+  vstup.replace("ď", "d");  //d hacek
+  vstup.replace("Ď", "D");  //D hacek
+
+  vstup.replace("é", "e");  //
+
+  vstup.replace("É", "E");
+  vstup.replace("ě", "e");  //e hacek
+  vstup.replace("Ě", "E");
+  vstup.replace("í", "i");  //dlouhe i
+  vstup.replace("Í", "I");  //dlouhe I
+  vstup.replace("ň", "n");
+  vstup.replace("Ň", "N");
+  vstup.replace("ó", "o");
+  vstup.replace("Ó", "O");
+  vstup.replace("ř", "r");
+  vstup.replace("Ř", "R");
+  vstup.replace("š", "s");
+  vstup.replace("Š", "S");
+  vstup.replace("ť", "t");
+  vstup.replace("Ť", "T");
+  vstup.replace("ú", "u");
+  vstup.replace("Ú", "U");
+  vstup.replace("ů", "u");
+  vstup.replace("Ů", "U");
+  vstup.replace("ý", "y");
+  vstup.replace("Ý", "Y");
+  vstup.replace("ž", "z");
+  vstup.replace("Ž", "Z");
+
+  return vstup;
+}
+
 String  cisloDoDne(int vstup) {
   String vystup = "";
 
@@ -62,7 +102,12 @@ String  cisloDoDne(int vstup) {
     return "";
   }
 
-  vystup = poleDnu[vstup];
+  #ifdef BIGOLED
+  vystup= nahradDiakritiku(poleDnu[vstup]);
+  #else
+  vystup= nahradISO8859(poleDnu[vstup]);
+  #endif
+
 
   return vystup;
 }
@@ -104,7 +149,11 @@ void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek
   int maxSirkaTextu = sloupecCile - pravyOkrajCile;
 
   oledDrawStringFromLeft(0, radek * vyskaRadku, linka);
+  #ifdef BIGOLED
+  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradDiakritiku(cil).substring(0, 17));
+  #else  
   oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
+  #endif
   oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
 }
 

@@ -3,7 +3,7 @@ void handleResponse(HTTPClient &http) {
  // Serial.println("capacity:" + String(capacity));
   //DynamicJsonDocument root(9000);
 
-
+ Serial.println("handleResponse");
 
 
   String httpResult = http.getString();
@@ -100,6 +100,8 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   }
 
 
+#ifdef USE_LCD
+
   if(arraySize<lcdMaxPocetOdjezdu)
   {
     for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
@@ -107,7 +109,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
       lcdVymazRadekOdjezdu(j);
     }
   }
-
+#endif
 
 
 
