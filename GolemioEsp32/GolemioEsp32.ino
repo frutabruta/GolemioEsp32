@@ -1,4 +1,7 @@
 //tzapu WifiManagerVerion
+//ssd1309
+//u8g2
+
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -339,10 +342,10 @@ void vypisChybuNaDispleje(String text) {
 #endif
 
 #ifdef USE_OLED
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
+  oled.clearBuffer();
+  oled.setCursor(0, 9);
   oled.println(text);
-  oled.display();
+  oled.sendBuffer();
 #endif
 
   Serial.println("error: " + text);
@@ -361,16 +364,23 @@ void setupDisplay()
     Wire.begin(SDA, SCL);
 
 #ifdef USE_OLED
-  if (!oled.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS, true, false)) {
+  if (!oled.begin()) {
     Serial.println(F("SSD1306 allocation failed"));
     /*  for (;;)
       ;  // Don't proceed, loop forever */
   }
-  oled.clearDisplay();
-  oled.setTextSize(1);               // Normal 1:1 pixel scale
-  oled.setTextColor(SSD1306_WHITE);  // Draw white text
-  oled.cp437(true);
-  oled.clearDisplay();
+  oled.enableUTF8Print();
+  
+  oled.clearBuffer();
+  oled.setFont(czfont9);
+  oled.setFontDirection(0);
+  oled.setCursor(0,9);
+  oled.print("oled init");
+  oled.sendBuffer();
+                // Normal 1:1 pixel scale
+ // oled.setTextColor(SSD1306_WHITE);  // Draw white text
+//  oled.cp437(true);
+ 
 #endif
 
 
@@ -398,11 +408,11 @@ void setupGolemio() {
 #ifdef USE_OLED
   Serial.println("WiFi connected");
 
-  oled.clearDisplay();
+  oled.clearBuffer();
   oledDrawStringFromLeft(0, 0, "IP address: ");
   oledDrawStringFromLeft(0, 10, WiFi.localIP().toString());
   oledDrawStringFromLeft(0, 20, " klic: " + klic);
-  oled.display();
+  oled.sendBuffer();
 #endif
 
   delay(2000);
@@ -417,10 +427,10 @@ void setupGolemio() {
   Serial.println(parametry);
 
 #ifdef USE_OLED
-  oled.clearDisplay();
+  oled.clearBuffer();
   oledDrawStringFromLeft(0, 0, "parametry: ");
   oledDrawStringFromLeft(0, 10, parametry);
-  oled.display();
+  oled.sendBuffer();
 #endif
 
   
@@ -441,7 +451,7 @@ bool jeSpicka(tm *vstup) {
 
 void clearDisplays() {
 #ifdef USE_OLED
-  oled.clearDisplay();
+  oled.clearBuffer();
 #endif
 
 
@@ -695,8 +705,6 @@ void setup() {
 
 
   ////////////////
-//NTP setup
-  configTime(1 * 3600, 1 * 3600, "tik.cesnet.cz", "time.nist.gov");
 
   Serial.println("DB2");
 
@@ -704,6 +712,10 @@ void setup() {
   setupGolemio();
   Serial.println("DB4");
   clearDisplays();
+
+  //NTP setup
+  configTime(1 * 3600, 1 * 3600, "tik.cesnet.cz", "time.nist.gov");
+
 }
 
 

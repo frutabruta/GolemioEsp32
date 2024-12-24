@@ -63,6 +63,10 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
 
 
 ## Changelog ##
+- 20241224_1935
+    - migrated OLED library to u8g2
+    - now supports czech language on SSD1309 2.42inch OLED display from LaskaKit 
+    - added custom font for display
 - 20241224_1532
     - added LaskaKit ESP32-C3-LPKit support
     - readme.md manual modification

@@ -1,19 +1,29 @@
 
 #ifdef USE_OLED
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-//uprava knihovny: https://forum.hwkitchen.cz/viewtopic.php?t=2503
-//Adafruit GFX:
+
+#include <U8g2lib.h>
+#include "czfonts.h"
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
+
 
 
 #define SCREEN_WIDTH 128     // OLED display width, in pixels
 #define SCREEN_HEIGHT 64     // OLED display height, in pixels
 #define OLED_RESET -1        // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C  ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+//#define SCREEN_ADDRESS 0x3C  ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+//Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-#define BIGOLED 1 //if using SSD1309 2.42" from LaskaKit to replace Czech characters
+
+U8G2_SSD1309_128X64_NONAME0_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE ,SCL,SDA);
+
+#define BIGOLED 1 // fixed with u8g2 if using SSD1309 2.42" from LaskaKit to replace Czech characters
 
 
 const int vyska32 = 0;
@@ -103,7 +113,8 @@ String  cisloDoDne(int vstup) {
   }
 
   #ifdef BIGOLED
-  vystup= nahradDiakritiku(poleDnu[vstup]);
+ // vystup= nahradDiakritiku(poleDnu[vstup]);
+ vystup=poleDnu[vstup];
   #else
   vystup= nahradISO8859(poleDnu[vstup]);
   #endif
@@ -117,7 +128,8 @@ String  cisloDoDne(int vstup) {
 void oledDrawCentreString(String &buf, int x, int y) {
   int16_t x1, y1;
   uint16_t w, h;
-  oled.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
+ // oled.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
+  w=oled.getStrWidth(buf.c_str());
   oled.setCursor(x - w / 2, y);
   oled.print(buf);
 }
@@ -125,12 +137,13 @@ void oledDrawCentreString(String &buf, int x, int y) {
 void oledDrawStringFromRight(int x, int y, String &buf, bool fill) {
   int16_t x1, y1;
   uint16_t w, h;
+  w=oled.getStrWidth(buf.c_str());
   if (fill) {
     buf = " " + buf;
-    oled.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
-    oled.fillRect(x - w, y, w, h, SSD1306_BLACK);
+  //  oled.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
+ //   oled.fillRect(x - w, y, w, h, SSD1306_BLACK);
   } else {
-    oled.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
+  //  oled.getTextBounds(buf, x, y, &x1, &y1, &w, &h);  //calc width of new string
   }
 
   oled.setCursor(x - w, y);
@@ -144,17 +157,19 @@ void oledDrawStringFromLeft(int sloupec, int radek, String obsah) {
 void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek) {
   int sloupecCile = 20;
   int vyskaRadku = 10;
-  int sloupecCasu = 128;
+  int sloupecCasu = 125;
   int pravyOkrajCile = 100;
   int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+  int offsetRadku=10;
 
-  oledDrawStringFromLeft(0, radek * vyskaRadku, linka);
+  oledDrawStringFromLeft(0, radek * vyskaRadku+offsetRadku, linka);
   #ifdef BIGOLED
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradDiakritiku(cil).substring(0, 17));
+ // oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradDiakritiku(cil).substring(0, 17));
+  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, cil.substring(0, 23));
   #else  
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradISO8859(cil).substring(0, 17));
+  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
   #endif
-  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku, cas, true);
+  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);
 }
 
 void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
@@ -163,7 +178,7 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
   int sloupecCas = 128;
   int posunPc = 0;
   int posunNc = 0;
-  int posun = 3;
+  int posun = 13;
 
 
 
@@ -174,7 +189,7 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
     y0 = 32 - vyskaRadku - posun + 1;
   }
 
-  oled.drawLine(0, y0, sloupecCas, y0, SSD1306_WHITE);
+//  oled.drawLine(0, y0, sloupecCas, y0, SSD1306_WHITE);
 
   //oled.setTextAlignment(TEXT_ALIGN_LEFT);
   oledDrawStringFromLeft(0, radek * vyskaRadku + posun, den);
@@ -183,6 +198,8 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
 
   //oled.setTextAlignment(TEXT_ALIGN_RIGHT);
   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+
+   oled.drawLine(0, 52, 127, 52);
 }
 
 
@@ -202,15 +219,18 @@ void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int 
     y0 = 32 - vyskaRadku - posun + 1;
   }
 
-  oled.drawLine(0, y0, sloupecCas, y0, SSD1306_WHITE);
+
+
 
   // oled.setTextAlignment(TEXT_ALIGN_LEFT);
-  oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
+ // oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
 
+ oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
 
 
   // oled.setTextAlignment(TEXT_ALIGN_RIGHT);
   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+  oled.drawLine(0, 50, 127, 50);
 }
 
 #endif
