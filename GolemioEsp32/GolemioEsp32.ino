@@ -1,4 +1,7 @@
 //tzapu WifiManagerVerion
+//ssd1309
+//u8g2
+
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -26,7 +29,7 @@ SCL - D1
 
 /*
 LaskaKit ESP32-C3-LPKit
-Set DFRobot Beetle ESP32-C3 in Arduino IDE
+Set ESP32C3 Dev Module in Arduino IDE
 Enable USB CDC on boot
 use default partition scheme with spiffs
 
@@ -37,9 +40,7 @@ to flash enter bootloader - hold FLASH button, shortly press RESET, release FLAS
 
 replug board after upload 
 
-
-
-to update use .ino.bin file (approx. 1,23 MByte in size)
+to update OTA  use .ino.bin file (approx. 1,23 MByte in size)
 */
 
 
@@ -55,23 +56,38 @@ bool wm_nonblocking = false;        // change to true to use non blocking
   WiFiManager wm;  
 
 
-//select one board
 
- //MH-ET LIVE ESP32 MiniKIT
-//#define MHET 1
+#include "configuration.h"
 
-//LaskaKit ESP32-C3-LPkit
-#define LPKITC3 1
+
+
 
 #ifdef MHET
-  #define TRIGGER_PIN 27 //MH-ET Mini  
+  #define TRIGGER_PIN 27 //MH ET LIVE ESP32Minikit  
   #define SDA 16 
   #define SCL 17 
+
 #elif  LPKITC3
   #define SDA 8
   #define SCL 10
-  #define TRIGGER_PIN 9 //DOIT ESP32 DEVKIT
+  #define TRIGGER_PIN 9 
   #define USUP_POWER 4   
+
+#elif  ESPWLED
+  #define SDA 10
+  #define SCL 8
+  #define TRIGGER_PIN 9 
+
+#elif METEOMINIC3
+  #define SDA 19
+  #define SCL 18
+  #define TRIGGER_PIN 8 //DOIT ESP32 DEVKIT
+  #define USUP_POWER 3   
+
+#elif ESPLAN  
+  #define SDA 33
+  #define SCL 32
+  #define TRIGGER_PIN 35
 
 #else
   #define SDA 16 
@@ -95,16 +111,9 @@ ArduinoJson Benoit Blanchon
 7.1.0f
 
 */
-//compile parameters
-
-//uncomment to use 128x64 I2C OLED on address 0x3C with SSD1306 driver
-#define USE_OLED 1
-
-//uncomment to use 20x4 I2C LCD on address 0x3F
-//#define USE_LCD 1
 
 
-#define DEBUGGING 1
+
 
 
 #include <FS.h>
@@ -113,17 +122,8 @@ ArduinoJson Benoit Blanchon
 #endif
 
 
-
-
-
 #include <Wire.h>
 #include <ArduinoJson.h>
-
-/////////////////////////////////////////  definice WifiMAnager
-
-
-
-
 
 
 String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle" };
@@ -135,21 +135,6 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-
-
-
-
-
-
-
-
-
-
-
-//DOIT ESP32
-
-
-
 #endif
 
 #ifdef ESP8266
@@ -170,6 +155,8 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 
 #include "handleResponse.h"
 
+
+//default attributes
 String klic = "xxx";
 String parametry = "?stopIds[]={\"0\":[\"U511Z1P\"]}&limit=20";
 String zakladAdresy = "https://api.golemio.cz/v2/public/departureboards";  //public API
@@ -339,10 +326,10 @@ void vypisChybuNaDispleje(String text) {
 #endif
 
 #ifdef USE_OLED
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
+  oled.clearBuffer();
+  oled.setCursor(0, 9);
   oled.println(text);
-  oled.display();
+  oled.sendBuffer();
 #endif
 
   Serial.println("error: " + text);
@@ -351,26 +338,28 @@ void vypisChybuNaDispleje(String text) {
 void setupDisplay()
 {
   Serial.println("setupDisplay");
-  
-  #ifdef LPKITC3
-    pinMode(USUP_POWER, OUTPUT); 
-  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
-  #endif
 
 
-    Wire.begin(SDA, SCL);
+    Wire.begin(SDA, SCL,5000);
 
 #ifdef USE_OLED
-  if (!oled.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS, true, false)) {
+  if (!oled.begin()) {
     Serial.println(F("SSD1306 allocation failed"));
     /*  for (;;)
       ;  // Don't proceed, loop forever */
   }
-  oled.clearDisplay();
-  oled.setTextSize(1);               // Normal 1:1 pixel scale
-  oled.setTextColor(SSD1306_WHITE);  // Draw white text
-  oled.cp437(true);
-  oled.clearDisplay();
+  oled.enableUTF8Print();
+  
+  oled.clearBuffer();
+  oled.setFont(czfont9);
+  oled.setFontDirection(0);
+  oled.setCursor(0,9);
+  oled.print("oled init");
+  oled.sendBuffer();
+                // Normal 1:1 pixel scale
+ // oled.setTextColor(SSD1306_WHITE);  // Draw white text
+//  oled.cp437(true);
+ 
 #endif
 
 
@@ -386,8 +375,6 @@ void setupDisplay()
 void setupGolemio() {
   Serial.println("void setupGolemio()");
 
-
-
   Serial.println("DP3");
   Serial.println("displej bezi na SCL:" + String(SCL) + " SDA:" + String(SDA));
   //Serial.println("displej bezi na SCL:" + String(D4) + " SDA:" + String(D3));
@@ -398,11 +385,11 @@ void setupGolemio() {
 #ifdef USE_OLED
   Serial.println("WiFi connected");
 
-  oled.clearDisplay();
+  oled.clearBuffer();
   oledDrawStringFromLeft(0, 0, "IP address: ");
   oledDrawStringFromLeft(0, 10, WiFi.localIP().toString());
   oledDrawStringFromLeft(0, 20, " klic: " + klic);
-  oled.display();
+  oled.sendBuffer();
 #endif
 
   delay(2000);
@@ -417,10 +404,10 @@ void setupGolemio() {
   Serial.println(parametry);
 
 #ifdef USE_OLED
-  oled.clearDisplay();
+  oled.clearBuffer();
   oledDrawStringFromLeft(0, 0, "parametry: ");
   oledDrawStringFromLeft(0, 10, parametry);
-  oled.display();
+  oled.sendBuffer();
 #endif
 
   
@@ -441,7 +428,7 @@ bool jeSpicka(tm *vstup) {
 
 void clearDisplays() {
 #ifdef USE_OLED
-  oled.clearDisplay();
+  oled.clearBuffer();
 #endif
 
 
@@ -449,6 +436,8 @@ void clearDisplays() {
   lcd.clear();
 #endif
 }
+
+
 
 void stahni() {
 
@@ -465,13 +454,16 @@ void stahni() {
     client->setInsecure();
     if (client) {
       HTTPClient http;
-      celaAdresa = zakladAdresy + parametry;
+      celaAdresa = zakladAdresy+parametry;
+      http.setTimeout(60000);
+
+
       http.begin(*client, celaAdresa);
 
       String randomString = "";
       http.addHeader("X-Access-Token", klic);
       //http.addHeader("X-Access-Token",klic);
-
+      http.addHeader(F("Content-Length"), String(0));
 
 #ifdef ESP32
       http.setAcceptEncoding("identity");
@@ -677,13 +669,32 @@ vypisChybuNaDispleje("web manager start");
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
+
+  
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
+ // Serial.setDebugOutput(true);
   Serial.println("void setup()");
+     #ifdef LPKITC3
+  pinMode(USUP_POWER, OUTPUT); 
+  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+   Serial.println("usup turned on");
+  #endif
+    #ifdef METEOMINIC3
+  pinMode(USUP_POWER, OUTPUT); 
+  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+   Serial.println("usup turned on");
+  #endif
+
+  #ifdef ESPLAN
+pinMode(TRIGGER_PIN, INPUT_PULLUP); 
+  #endif
+
   setupDisplay();
   setupSpiffs();
-  setupManager();
+  setupManager(); 
 
+
+  
 
   Serial.println("The values in the file are: ");
   Serial.println("\tapi key : " + klic);
@@ -695,8 +706,6 @@ void setup() {
 
 
   ////////////////
-//NTP setup
-  configTime(1 * 3600, 1 * 3600, "tik.cesnet.cz", "time.nist.gov");
 
   Serial.println("DB2");
 
@@ -704,6 +713,10 @@ void setup() {
   setupGolemio();
   Serial.println("DB4");
   clearDisplays();
+
+  //NTP setup
+  configTime(1 * 3600, 1 * 3600, "tik.cesnet.cz", "time.nist.gov");
+
 }
 
 

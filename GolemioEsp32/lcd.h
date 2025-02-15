@@ -1,6 +1,5 @@
 
 #ifdef USE_LCD
-//#include <LiquidCrystal_I2C.h>       // by Frank de Brabander, 1.1.2
 //LiquidCrystal_I2C lcd(0x27, 20, 4);  //modry 0x27
 //LiquidCrystal_I2C lcd(0x3F, 20, 4); //zeleny 0x3F
 #include <LCDI2C_Multilingual.h> //LiquicCrystal I2C MultiLingual by Loc P.LE 2.0.2

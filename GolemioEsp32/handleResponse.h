@@ -54,7 +54,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
 #ifdef USE_OLED
   int oledMaxPocetOdjezdu = 5;
-  oled.clearDisplay();
+  oled.clearBuffer();
 
   int cisloRadkuInfo = 5;
   if (vyska32 == 1) {
@@ -148,9 +148,9 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   ////////konec casu
 
 #ifdef USE_OLED
-  oledVykresliSpodniRadekDatum(casPrikaz, nahradISO8859(cisloDoDne(den.toInt())), cisloRadkuInfo);
+  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt()), cisloRadkuInfo);
 
   //oled.startscrollleft(6,7);
-  oled.display();
+  oled.sendBuffer();
 #endif
 }
