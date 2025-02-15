@@ -1,7 +1,8 @@
 # GolemioEsp32 #
 
 Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. This version requires an API key.
-Tested board is DO-IT ESP32 DEVKIT V1.
+Tested boards are MH-ET LIVE ESP32 MiniKIT and [LaskaKit ESPwled](https://github.com/LaskaKit/ESPwled).
+Should be possible to use generic ESP32 S2 and ESP32 C3 board.
 ESP8266 is untested now ( probably doesn't work with more than two departures (problem with gzip encoding in golemio API).
 
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
@@ -11,28 +12,24 @@ ESP8266 is untested now ( probably doesn't work with more than two departures (p
 WiFiManager by tzapu
 https://github.com/tzapu/WiFiManager/tree/master
 
-Arduino-LiquidCrystal-I2C-library 1.1.2
-https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
-LiquidCrystal_I2C.h
 
-
-
+For LCD version (2.0.2):
 LiquidCrystal I2C MultiLingual by Loc P.LE 2.0.2
 https://github.com/locple/LCDI2C_Multilingual
 
+For OLED version:
+U8g2 by oliver (2.35.30)
+https://github.com/olikraus/u8g2
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
-Modification of adafruit gfx to support czech characters on 128x64 OLED screen:
-https://forum.hwkitchen.cz/viewtopic.php?t=2503
-
+ArduinoJson by BenoitBlanchon (7.2.0)
+https://github.com/bblanchon/ArduinoJson
 
 
 
 ## Setup ##
-- NEEDS TO BE MODIFIED
-- modify the code
+- select options in configuration.h
+    - uncomment one board
+- select display
     - to use 20x4 LCD uncomment ```#define USE_LCD 1```
     - to use 128x64 OLED uncomment ```#define USE_OLED 1```
 
@@ -57,12 +54,18 @@ https://forum.hwkitchen.cz/viewtopic.php?t=2503
         - connect to GolemioSetup Wi-Fi
         - on the captive portal select three dots - use network as is
         - in web browser navigate to 192.168.4.1
-        - select updatee in menu
+        - select update in menu
         - wait for update finished message
 
 
 
 ## Changelog ##
+- 20250215_2336
+    - error -11 fix (timeout value)
+    - error 400 fix (content-length)
+    - setting moved to file configuration.h
+    - added .3mf files of the case
+    - optimized for LaskaKit ESP WLED
 - 20241224_1935
     - migrated OLED library to u8g2
     - now supports czech language on SSD1309 2.42inch OLED display from LaskaKit 

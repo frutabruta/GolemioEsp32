@@ -29,7 +29,7 @@ SCL - D1
 
 /*
 LaskaKit ESP32-C3-LPKit
-Set DFRobot Beetle ESP32-C3 in Arduino IDE
+Set ESP32C3 Dev Module in Arduino IDE
 Enable USB CDC on boot
 use default partition scheme with spiffs
 
@@ -40,9 +40,7 @@ to flash enter bootloader - hold FLASH button, shortly press RESET, release FLAS
 
 replug board after upload 
 
-
-
-to update use .ino.bin file (approx. 1,23 MByte in size)
+to update OTA  use .ino.bin file (approx. 1,23 MByte in size)
 */
 
 
@@ -58,23 +56,38 @@ bool wm_nonblocking = false;        // change to true to use non blocking
   WiFiManager wm;  
 
 
-//select one board
 
- //MH-ET LIVE ESP32 MiniKIT
-//#define MHET 1
+#include "configuration.h"
 
-//LaskaKit ESP32-C3-LPkit
-#define LPKITC3 1
+
+
 
 #ifdef MHET
-  #define TRIGGER_PIN 27 //MH-ET Mini  
+  #define TRIGGER_PIN 27 //MH ET LIVE ESP32Minikit  
   #define SDA 16 
   #define SCL 17 
+
 #elif  LPKITC3
   #define SDA 8
   #define SCL 10
-  #define TRIGGER_PIN 9 //DOIT ESP32 DEVKIT
+  #define TRIGGER_PIN 9 
   #define USUP_POWER 4   
+
+#elif  ESPWLED
+  #define SDA 10
+  #define SCL 8
+  #define TRIGGER_PIN 9 
+
+#elif METEOMINIC3
+  #define SDA 19
+  #define SCL 18
+  #define TRIGGER_PIN 8 //DOIT ESP32 DEVKIT
+  #define USUP_POWER 3   
+
+#elif ESPLAN  
+  #define SDA 33
+  #define SCL 32
+  #define TRIGGER_PIN 35
 
 #else
   #define SDA 16 
@@ -98,16 +111,9 @@ ArduinoJson Benoit Blanchon
 7.1.0f
 
 */
-//compile parameters
-
-//uncomment to use 128x64 I2C OLED on address 0x3C with SSD1306 driver
-#define USE_OLED 1
-
-//uncomment to use 20x4 I2C LCD on address 0x3F
-//#define USE_LCD 1
 
 
-#define DEBUGGING 1
+
 
 
 #include <FS.h>
@@ -116,17 +122,8 @@ ArduinoJson Benoit Blanchon
 #endif
 
 
-
-
-
 #include <Wire.h>
 #include <ArduinoJson.h>
-
-/////////////////////////////////////////  definice WifiMAnager
-
-
-
-
 
 
 String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle" };
@@ -138,21 +135,6 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-
-
-
-
-
-
-
-
-
-
-
-//DOIT ESP32
-
-
-
 #endif
 
 #ifdef ESP8266
@@ -173,6 +155,8 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 
 #include "handleResponse.h"
 
+
+//default attributes
 String klic = "xxx";
 String parametry = "?stopIds[]={\"0\":[\"U511Z1P\"]}&limit=20";
 String zakladAdresy = "https://api.golemio.cz/v2/public/departureboards";  //public API
@@ -354,14 +338,9 @@ void vypisChybuNaDispleje(String text) {
 void setupDisplay()
 {
   Serial.println("setupDisplay");
-  
-  #ifdef LPKITC3
-    pinMode(USUP_POWER, OUTPUT); 
-  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
-  #endif
 
 
-    Wire.begin(SDA, SCL);
+    Wire.begin(SDA, SCL,5000);
 
 #ifdef USE_OLED
   if (!oled.begin()) {
@@ -395,8 +374,6 @@ void setupDisplay()
 
 void setupGolemio() {
   Serial.println("void setupGolemio()");
-
-
 
   Serial.println("DP3");
   Serial.println("displej bezi na SCL:" + String(SCL) + " SDA:" + String(SDA));
@@ -460,6 +437,8 @@ void clearDisplays() {
 #endif
 }
 
+
+
 void stahni() {
 
   if (WiFi.status() == WL_CONNECTED) {  //Check WiFi connection status
@@ -475,13 +454,16 @@ void stahni() {
     client->setInsecure();
     if (client) {
       HTTPClient http;
-      celaAdresa = zakladAdresy + parametry;
+      celaAdresa = zakladAdresy+parametry;
+      http.setTimeout(60000);
+
+
       http.begin(*client, celaAdresa);
 
       String randomString = "";
       http.addHeader("X-Access-Token", klic);
       //http.addHeader("X-Access-Token",klic);
-
+      http.addHeader(F("Content-Length"), String(0));
 
 #ifdef ESP32
       http.setAcceptEncoding("identity");
@@ -687,13 +669,32 @@ vypisChybuNaDispleje("web manager start");
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
+
+  
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
+ // Serial.setDebugOutput(true);
   Serial.println("void setup()");
+     #ifdef LPKITC3
+  pinMode(USUP_POWER, OUTPUT); 
+  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+   Serial.println("usup turned on");
+  #endif
+    #ifdef METEOMINIC3
+  pinMode(USUP_POWER, OUTPUT); 
+  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+   Serial.println("usup turned on");
+  #endif
+
+  #ifdef ESPLAN
+pinMode(TRIGGER_PIN, INPUT_PULLUP); 
+  #endif
+
   setupDisplay();
   setupSpiffs();
-  setupManager();
+  setupManager(); 
 
+
+  
 
   Serial.println("The values in the file are: ");
   Serial.println("\tapi key : " + klic);
