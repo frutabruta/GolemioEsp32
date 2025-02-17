@@ -207,6 +207,7 @@ void heartBeatPrint() {
     else {
       Serial.print("F");  // F means not connected to WiFi
       vypisChybuNaDispleje("wifi not connected");
+      WiFi.reconnect();
     }
   }
 
@@ -271,7 +272,7 @@ void checkButton() {
       // start portal w delay
       Serial.println("Starting config portal");
       vypisChybuNaDispleje("startuju konfiguracni portal");
-      wm.setConfigPortalTimeout(120);
+     
 
       if (!wm.startConfigPortal("GolemioSetup", "password")) {
         Serial.println("failed to connect or hit timeout");
@@ -519,6 +520,7 @@ bool shouldSaveConfig = false;
 void saveConfigCallback () {
   Serial.println("Should save config");
   shouldSaveConfig = true;
+  //ESP.restart();
 }
 
 void saveParamsCallback () {
@@ -527,7 +529,7 @@ void saveParamsCallback () {
   klic = paramApiKey.getValue();
   parametry = paramParameters.getValue();
   saveSpiffs();
-  //ESP.restart();
+  ESP.restart();
 }
 
 
@@ -620,7 +622,7 @@ void saveSpiffs() {
 
 void setupManager() {
  // WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
-  
+   wm.setConfigPortalTimeout(120);
   Serial.println("\n Starting");
 vypisChybuNaDispleje("web manager start");
   

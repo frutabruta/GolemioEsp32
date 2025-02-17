@@ -60,6 +60,8 @@ https://github.com/bblanchon/ArduinoJson
 
 
 ## Changelog ##
+- 20250217_1429
+    - reconnect fix
 - 20250215_2336
     - error -11 fix (timeout value)
     - error 400 fix (content-length)
