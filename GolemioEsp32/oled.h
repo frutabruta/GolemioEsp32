@@ -169,7 +169,14 @@ void oledVykresliRadekOdjezdu(String &linka, String &cil, String &cas, int radek
   #else  
   oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
   #endif
+
+
+  if(cas.length()<2)
+  {
+    cas=" "+cas;
+  }
   oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);
+  
 }
 
 void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
@@ -197,7 +204,8 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
 
 
   //oled.setTextAlignment(TEXT_ALIGN_RIGHT);
-  oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+ // oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
 
    oled.drawLine(0, 52, 127, 52);
 }

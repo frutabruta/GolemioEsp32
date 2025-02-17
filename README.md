@@ -60,6 +60,10 @@ https://github.com/bblanchon/ArduinoJson
 
 
 ## Changelog ##
+- 20250217_1716
+    - move back to PID Departure Boards (v2) 
+    - fix date alignment
+    - improve minutes 1
 - 20250217_1429
     - reconnect fix
 - 20250215_2336

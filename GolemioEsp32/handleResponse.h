@@ -19,9 +19,14 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
 
   StaticJsonDocument<200> filter;
+  /*
   filter[0][0]["departure"]["minutes"] = true;
   filter[0][0]["trip"]["headsign"] = true;
   filter[0][0]["route"]["short_name"] = true;
+  */
+  filter["departures"][0]["departure_timestamp"]["minutes"] = true;
+  filter["departures"][0]["trip"]["headsign"] = true;
+  filter["departures"][0]["route"]["short_name"] = true;
   Serial.print("Velikost filtru:");
   Serial.println(String(filter.size()));
 
@@ -66,7 +71,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
 
 
-  int arraySize = root[0].size();
+ int arraySize = root["departures"].size();
   Serial.println("pocet odjezdu:" + String(arraySize));
 
   int counter = 0;
@@ -74,9 +79,9 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   for (int i = 0; (i < arraySize); i++) {
     Serial.println("pruchod " + String(i));
     Serial.println("pocetElementu " + String(root[0][i].size()));
-    String cas = String(root[0][i]["departure"]["minutes"]);
-    String linka = root[0][i]["route"]["short_name"].as<const char *>();
-    String cil = root[0][i]["trip"]["headsign"].as<const char *>();
+    String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
+    String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
+    String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
     Serial.println("spoj: " + linka + " " + cil + " " + cas);
 
 #ifdef USE_OLED
@@ -131,11 +136,15 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
   char buffer[80];
 
+  char bufferDatum[80];
+  char bufferCas[80];
+
   //strftime(buffer, 80, "%Y%m%d",timeinfo);
-  strftime(buffer, 80, "%d.%m.%g %R", timeinfo);
+  strftime(bufferDatum, 80, "%d.%m.%Y", timeinfo);
+  strftime(bufferCas, 80, "%R", timeinfo);
 
   int minutOdRana = 0;
-  casPrikaz = buffer;
+  casPrikaz = bufferCas;
   strftime(buffer, 80, "%u", timeinfo);
   den = buffer;
 
@@ -148,7 +157,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   ////////konec casu
 
 #ifdef USE_OLED
-  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt()), cisloRadkuInfo);
+  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo);
 
   //oled.startscrollleft(6,7);
   oled.sendBuffer();

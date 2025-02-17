@@ -126,7 +126,7 @@ ArduinoJson Benoit Blanchon
 #include <ArduinoJson.h>
 
 
-String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle" };
+String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
 
 
 ////////////////////////////////////// definice Golemio
@@ -158,8 +158,8 @@ String poleDnu[] = { "", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek"
 
 //default attributes
 String klic = "xxx";
-String parametry = "?stopIds[]={\"0\":[\"U511Z1P\"]}&limit=20";
-String zakladAdresy = "https://api.golemio.cz/v2/public/departureboards";  //public API
+String parametry = "?cisIds=58791&minutesBefore=1&minutesAfter=60&limit=5&mode=departures&includeMetroTrains=true&order=real";
+String zakladAdresy = "https://api.golemio.cz/v2/pid/departureboards";  //public API
 String celaAdresa = "";                                                    //public API
 
    WiFiManagerParameter paramApiKey("golemioApiKey", "golemioApiKeyText", klic.c_str(), 350);
@@ -529,7 +529,7 @@ void saveParamsCallback () {
   klic = paramApiKey.getValue();
   parametry = paramParameters.getValue();
   saveSpiffs();
-  ESP.restart();
+  //ESP.restart();
 }
 
 
@@ -558,7 +558,7 @@ void setupSpiffs() {
         configFile.readBytes(buf.get(), size);
 
 #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-        DynamicJsonDocument json(1024);
+        JsonDocument json;
         auto deserializeError = deserializeJson(json, buf.get());
         serializeJson(json, Serial);
         if (!deserializeError) {
@@ -590,7 +590,7 @@ void saveSpiffs() {
   if (shouldSaveConfig) {
     Serial.println("saving config");
 #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-    DynamicJsonDocument json(1024);
+    JsonDocument json;
 #else
     DynamicJsonBuffer jsonBuffer;
     JsonObject& json = jsonBuffer.createObject();
