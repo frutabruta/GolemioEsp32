@@ -58,5 +58,18 @@ void lcdVymazRadekOdjezdu(int radek) {
   }
 }
 
+void lcdSetTextPage(String line1, String line2, String line3, String line4)
+{
+    lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(line1);
+  lcd.setCursor(0, 1);
+  lcd.print(line2);
+  lcd.setCursor(0, 2);
+  lcd.print(line4);
+  lcd.setCursor(0, 3);
+  lcd.print(line4);
+}
+
 
 #endif

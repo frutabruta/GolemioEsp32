@@ -15,10 +15,12 @@ void handleResponse(HTTPClient &http) {
     https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
 DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
 */
-  DynamicJsonDocument root(9000);
+  JsonDocument root;
 
+  //DynamicJsonDocument root(9000);
 
-  StaticJsonDocument<200> filter;
+  JsonDocument filter;
+  //StaticJsonDocument<200> filter;
   /*
   filter[0][0]["departure"]["minutes"] = true;
   filter[0][0]["trip"]["headsign"] = true;
@@ -43,7 +45,7 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
     return;
   } else {
     Serial.print("json capacity:");
-    Serial.println(root.capacity());
+// deprecated in ArduinoJson7    Serial.println(root.capacity());
   }
 
 

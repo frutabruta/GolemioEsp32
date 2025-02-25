@@ -241,4 +241,15 @@ void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int 
   oled.drawLine(0, 50, 127, 50);
 }
 
+
+void oledSetTextPage(String line1, String line2, String line3, String line4)
+{
+    oled.clearBuffer();
+  oledDrawStringFromLeft(0, 10, line1);
+  oledDrawStringFromLeft(0, 20, line2);
+  oledDrawStringFromLeft(0, 30, line3);
+  oledDrawStringFromLeft(0, 40, line4);
+    oled.sendBuffer();
+}
+
 #endif

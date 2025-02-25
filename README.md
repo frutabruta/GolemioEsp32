@@ -1,15 +1,17 @@
 # GolemioEsp32 #
 
-Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 20x4 LCD display. This version requires an API key.
+Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 128x64 graphic OLED or 20x4 character LCD display. 
+
 Tested boards are MH-ET LIVE ESP32 MiniKIT and [LaskaKit ESPwled](https://github.com/LaskaKit/ESPwled).
-Should be possible to use generic ESP32 S2 and ESP32 C3 board.
-ESP8266 is untested now ( probably doesn't work with more than two departures (problem with gzip encoding in golemio API).
+Should be possible to use generic ESP32 S2 and ESP32 C3 board respectively.
+
+
+[<img src="images/oledespwled.jpg" width="300px"/>](images/oledespwled.jpg?raw=true "128x64 OLED screen")
 
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
-[<img src="images/oled128x64.jpg" width="300px"/>](images/oled128x64.jpg?raw=true "128x64 OLED screen")
 ## Required libraries ##
 
-WiFiManager by tzapu
+WiFiManager by tzapu (2.0.17)
 https://github.com/tzapu/WiFiManager/tree/master
 
 
@@ -24,6 +26,8 @@ https://github.com/olikraus/u8g2
 ArduinoJson by BenoitBlanchon (7.2.0)
 https://github.com/bblanchon/ArduinoJson
 
+ESP32 3.0.7 board added in board manager
+
 
 
 ## Setup ##
@@ -37,7 +41,7 @@ https://github.com/bblanchon/ArduinoJson
 
 - connect to WI-FI hotspot created by ESP32 
     - password and SSID should be shown on the display
-    - GolemioDisplay, password
+    - GolemioSetup, password
 - open the Configuration page
     - enter your WI-FI credentials
     - modify Golemio request parameters according to https://api.golemio.cz/pid/docs/openapi/
@@ -60,6 +64,9 @@ https://github.com/bblanchon/ArduinoJson
 
 
 ## Changelog ##
+- 20250225_2336
+    - improved debug messages on OLED
+    - version during boot
 - 20250217_1716
     - move back to PID Departure Boards (v2) 
     - fix date alignment

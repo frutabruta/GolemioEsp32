@@ -2,6 +2,7 @@
 //ssd1309
 //u8g2
 
+String version="20250225_2336";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -88,6 +89,11 @@ bool wm_nonblocking = false;        // change to true to use non blocking
   #define SDA 33
   #define SCL 32
   #define TRIGGER_PIN 35
+
+#elif CUSTOM
+  #define SDA 21
+  #define SCL 22
+  #define TRIGGER_PIN 0
 
 #else
   #define SDA 16 
@@ -182,7 +188,8 @@ int pocitacVterin = 30;
 
 String idZastavky = "58791";  //58762 balabenka
 
-
+String wifiPortalName="GolemioSetup";
+String wifiPortalPassword="password";
 
 bool filtrNeaktivni = true;
 
@@ -272,17 +279,19 @@ void checkButton() {
       // start portal w delay
       Serial.println("Starting config portal");
       vypisChybuNaDispleje("startuju konfiguracni portal");
-     
+      setTextPage("starting portal","192.168.4.1",wifiPortalName,wifiPortalPassword);
 
-      if (!wm.startConfigPortal("GolemioSetup", "password")) {
+      if (!wm.startConfigPortal(wifiPortalName.c_str(), wifiPortalPassword.c_str())) {
         Serial.println("failed to connect or hit timeout");
-        vypisChybuNaDispleje("nepovedlo se pripojit nebo timeout");
+        setTextPage("wi-fi ","connection","failed","");
         delay(3000);
         // ESP.restart();
       } else {
         //if you get here you have connected to the WiFi
         Serial.println("connected...yeey :)");
-        vypisChybuNaDispleje("wifi pripojena");
+        //vypisChybuNaDispleje("wifi pripojena");
+        setTextPage("IP address: ",WiFi.localIP().toString(),WiFi.SSID(),"");
+        delay(2000);
       }
     }
   }
@@ -317,31 +326,36 @@ void printLocalTime() {
   }
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
+
+void setTextPage(String line1, String line2, String line3, String line4)
+{
+  #ifdef USE_OLED
+   oledSetTextPage(line1,line2,line3,line4);
+#endif
+
+#ifdef USE_LCD
+ lcdSetTextPage(line1,line2,line3,line4);
+#endif 
+
+}
+
 void vypisChybuNaDispleje(String text) {
   printLocalTime();
   //Serial.println(timeToString() );
-#ifdef USE_LCD
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(text);
-#endif
 
-#ifdef USE_OLED
-  oled.clearBuffer();
-  oled.setCursor(0, 9);
-  oled.println(text);
-  oled.sendBuffer();
-#endif
+  setTextPage(text,"","","");
+
 
   Serial.println("error: " + text);
 }
+
 
 void setupDisplay()
 {
   Serial.println("setupDisplay");
 
 
-    Wire.begin(SDA, SCL,5000);
+    Wire.begin(SDA, SCL);
 
 #ifdef USE_OLED
   if (!oled.begin()) {
@@ -368,52 +382,32 @@ void setupDisplay()
   lcd.init();
   lcd.backlight();
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Connecting");
-#endif
+#endif  
+
+
+setTextPage("golemio display","version",version,"");
+
 }
 
 void setupGolemio() {
   Serial.println("void setupGolemio()");
 
-  Serial.println("DP3");
-  Serial.println("displej bezi na SCL:" + String(SCL) + " SDA:" + String(SDA));
-  //Serial.println("displej bezi na SCL:" + String(D4) + " SDA:" + String(D3));
-  Serial.println("DP4");
+  Serial.println("SCL:" + String(SCL) + " SDA:" + String(SDA));
 
-  Serial.println("connected...yeey :)");
+  
 
-#ifdef USE_OLED
-  Serial.println("WiFi connected");
-
-  oled.clearBuffer();
-  oledDrawStringFromLeft(0, 0, "IP address: ");
-  oledDrawStringFromLeft(0, 10, WiFi.localIP().toString());
-  oledDrawStringFromLeft(0, 20, " klic: " + klic);
-  oled.sendBuffer();
-#endif
 
   delay(2000);
 
-  Serial.println("pred padem");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  Serial.println("po padu");
-
-  //strcpy(parametryC, myMenuItems[0].pdata);
-  //strcpy(klic, myMenuItems[1].pdata);
+  
   Serial.println(parametry);
 
-#ifdef USE_OLED
-  oled.clearBuffer();
-  oledDrawStringFromLeft(0, 0, "parametry: ");
-  oledDrawStringFromLeft(0, 10, parametry);
-  oled.sendBuffer();
-#endif
+setTextPage( "parametry: ",parametry,"","");
 
-  
   Serial.println(timeToString());
-  //celaAdresa += parametryC;
+
   //http.useHTTP10(true);
 }
 
@@ -458,12 +452,9 @@ void stahni() {
       celaAdresa = zakladAdresy+parametry;
       http.setTimeout(60000);
 
-
       http.begin(*client, celaAdresa);
 
-      String randomString = "";
       http.addHeader("X-Access-Token", klic);
-      //http.addHeader("X-Access-Token",klic);
       http.addHeader(F("Content-Length"), String(0));
 
 #ifdef ESP32
@@ -486,13 +477,13 @@ void stahni() {
             handleResponse(http);
             break;
           default:
-            vypisChybuNaDispleje("chyba http: " + String(httpCode));
+            vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
 
             break;
         }
 
       } else {
-        vypisChybuNaDispleje("chyba http: " + String(httpCode));
+        vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
       }
 
       http.end();  //Close connection
@@ -598,8 +589,7 @@ void saveSpiffs() {
 
 
     json["golemio_api_key"] = klic;
-    json["golemio_parameters"] = parametry;
-    
+    json["golemio_parameters"] = parametry;    
 
 
     File configFile = SPIFFS.open("/config.json", "w");
@@ -615,6 +605,7 @@ void saveSpiffs() {
     json.printTo(configFile);
 #endif
     configFile.close();
+    //ESP.restart();
     //end save
   }
 }
@@ -623,21 +614,11 @@ void saveSpiffs() {
 void setupManager() {
  // WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
    wm.setConfigPortalTimeout(120);
+   wm.setBreakAfterConfig(true);
   Serial.println("\n Starting");
-vypisChybuNaDispleje("web manager start");
+
   
-  #ifdef MHET
-  pinMode(TRIGGER_PIN, INPUT_PULLUP);
-  #else
-  pinMode(TRIGGER_PIN, INPUT);
-  #endif
-
-
   //if (wm_nonblocking) wm.setConfigPortalBlocking(false); 
-
-
-
-  
 
 
   //set config save notify callback
@@ -652,9 +633,12 @@ vypisChybuNaDispleje("web manager start");
   // set dark theme
   wm.setClass("invert");
 
-
- if (!wm.autoConnect("GolemioSetup", "password")) {
+vypisChybuNaDispleje("connecting");
+ setTextPage("starting portal","192.168.4.1",wifiPortalName,wifiPortalPassword);
+ if (!wm.autoConnect(wifiPortalName.c_str(), wifiPortalPassword.c_str())) 
+ {
     Serial.println("failed to connect and hit timeout");
+    vypisChybuNaDispleje("spojeni se nezdařilo");
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.restart();
@@ -663,68 +647,60 @@ vypisChybuNaDispleje("web manager start");
 
   //if you get here you have connected to the WiFi
   Serial.println("connected...yeey :)");
-
+  vypisChybuNaDispleje("připojeno");
   klic = paramApiKey.getValue();
   parametry = paramParameters.getValue();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void setup() {
+void setup() {  
 
-  
   Serial.begin(115200);
  // Serial.setDebugOutput(true);
   Serial.println("void setup()");
+  
      #ifdef LPKITC3
   pinMode(USUP_POWER, OUTPUT); 
   digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
    Serial.println("usup turned on");
   #endif
+  
     #ifdef METEOMINIC3
   pinMode(USUP_POWER, OUTPUT); 
   digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
    Serial.println("usup turned on");
   #endif
-
+    
+ pinMode(TRIGGER_PIN, INPUT);
   #ifdef ESPLAN
 pinMode(TRIGGER_PIN, INPUT_PULLUP); 
   #endif
 
+   #ifdef MHET
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);  
+  #endif
+
   setupDisplay();
   setupSpiffs();
-  setupManager(); 
-
-
-  
+  setupManager();   
 
   Serial.println("The values in the file are: ");
   Serial.println("\tapi key : " + klic);
   Serial.println("\tparametry: " + parametry);
 
   saveSpiffs();
-  Serial.println("DB1");
-  // Debug console
 
-
-  ////////////////
-
-  Serial.println("DB2");
-
-  Serial.println("DB3");
   setupGolemio();
-  Serial.println("DB4");
   clearDisplays();
 
   //NTP setup
   configTime(1 * 3600, 1 * 3600, "tik.cesnet.cz", "time.nist.gov");
-
 }
 
 
 void loop() {
   checkButton();
-  //Serial.println("DBL");
   // put your main code here, to run repeatedly:
   check_status();
 }
