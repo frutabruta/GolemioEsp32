@@ -1,4 +1,4 @@
-# GolemioEsp32 #
+# GolemioEsp32
 
 Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 128x64 graphic OLED or 20x4 character LCD display. 
 
@@ -9,7 +9,7 @@ Should be possible to use generic ESP32 S2 and ESP32 C3 board respectively.
 [<img src="images/oledespwled.jpg" width="300px"/>](images/oledespwled.jpg?raw=true "128x64 OLED screen")
 
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
-## Required libraries ##
+## Required libraries
 
 WiFiManager by tzapu (2.0.17)
 https://github.com/tzapu/WiFiManager/tree/master
@@ -28,9 +28,16 @@ https://github.com/bblanchon/ArduinoJson
 
 ESP32 3.0.7 board added in board manager
 
+## Wiring
 
+| pin numbers             | SDA | SCL |
+|-------------------------|-----|-----|
+| MH-ET ESP32Minikit      |  16 |  17 |
+| LaskaKit ESPwled (uŠup) |  10 |   8 |
 
-## Setup ##
+For MH-ET ESP32Minikit, external button on pin 27 is required.
+
+## Setup
 - select options in configuration.h
     - uncomment one board
 - select display
@@ -63,7 +70,10 @@ ESP32 3.0.7 board added in board manager
 
 
 
-## Changelog ##
+## Changelog
+- 20250226_2217
+    - LCD version debug text fix 3rd row
+    - added pin numbers in the description
 - 20250225_2336
     - improved debug messages on OLED
     - version during boot

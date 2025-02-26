@@ -18,7 +18,7 @@
 //MH-ET LIVE ESP32 MiniKIT 
 //#define MHET 1
 
-
+//#define CUSTOM 1 //Do-IT ESP32 with LCD display
 //uncomment to enable debug messages
 #define DEBUGGING 1
 
