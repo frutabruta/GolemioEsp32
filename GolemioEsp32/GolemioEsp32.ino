@@ -2,7 +2,7 @@
 //ssd1309
 //u8g2
 
-String version="20250226_2217";
+String version="20250309_1601";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -59,7 +59,7 @@ bool wm_nonblocking = false;        // change to true to use non blocking
 
 
 #include "configuration.h"
-
+#include "setTime.h"
 
 
 
@@ -695,7 +695,8 @@ pinMode(TRIGGER_PIN, INPUT_PULLUP);
   clearDisplays();
 
   //NTP setup
-  configTime(1 * 3600, 1 * 3600, "tik.cesnet.cz", "time.nist.gov");
+  initTime("CET-1CEST,M3.5.0,M10.5.0/3"); //Prague TimeZone
+
 }
 
 

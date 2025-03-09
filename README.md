@@ -71,6 +71,8 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
 
 
 ## Changelog
+- 20250309_1601
+    - dalight saving time fix
 - 20250226_2217
     - LCD version debug text fix 3rd row
     - added pin numbers in the description
