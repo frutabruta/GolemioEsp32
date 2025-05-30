@@ -134,6 +134,8 @@ ArduinoJson Benoit Blanchon
 
 String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
 
+int infotextOffset=0;
+String infotextGlobalVariable="";
 
 ////////////////////////////////////// definice Golemio
 #ifdef ESP32
@@ -158,6 +160,10 @@ String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek"
 #ifdef USE_OLED
 #include "oled.h"
 #endif
+
+
+
+
 
 #include "handleResponse.h"
 
@@ -185,6 +191,9 @@ const int spickaOd = 7;
 const int spickaDo = 9;
 
 int pocitacVterin = 30;
+
+
+
 
 String idZastavky = "58791";  //58762 balabenka
 
@@ -229,16 +238,18 @@ void heartBeatPrint() {
 void check_status() {
   static unsigned long checkstatus_timeout = 0;
 
-
+periodicDisplayUpdate();
 
   //KH
 #define HEARTBEAT_INTERVAL 1000L
   // Print WiFi hearbeat, Publish MQTT Topic every HEARTBEAT_INTERVAL (5) seconds.
   if ((millis() > checkstatus_timeout) || (checkstatus_timeout == 0)) {
     if (WiFi.status() == WL_CONNECTED) {
+    
 #ifdef USE_LCD
       lcdVykresliCas();
 #endif
+
 #ifdef DEBUGGING
       Serial.println("free heap:");
       Serial.println(ESP.getFreeHeap());
@@ -364,6 +375,7 @@ void setupDisplay()
       ;  // Don't proceed, loop forever */
   }
   oled.enableUTF8Print();
+  oled.setFontMode(0);
   
   oled.clearBuffer();
   oled.setFont(czfont9);
@@ -432,6 +444,18 @@ void clearDisplays() {
 #endif
 }
 
+
+void periodicDisplayUpdate()
+{
+  #ifdef USE_OLED
+  oledPeriodicDisplayUpdate();
+#endif
+
+
+#ifdef USE_LCD
+  lcdPeriodicDisplayUpdate();
+#endif
+}
 
 
 void stahni() {
@@ -704,4 +728,5 @@ void loop() {
   checkButton();
   // put your main code here, to run repeatedly:
   check_status();
+
 }

@@ -29,6 +29,9 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   filter["departures"][0]["departure_timestamp"]["minutes"] = true;
   filter["departures"][0]["trip"]["headsign"] = true;
   filter["departures"][0]["route"]["short_name"] = true;
+  
+  filter["infotexts"][0]["text"] = true;
+  filter["infotexts"][0]["display_type"] = true;
   Serial.print("Velikost filtru:");
   Serial.println(String(filter.size()));
 
@@ -70,15 +73,35 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   }
 #endif
 
+String infotextsRunning="";
+String infotextFullscreen="";
 
-
+ int arraySizeInfotexts = root["infotexts"].size();
+   Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
+ 
+  for (int i = 0; (i < arraySizeInfotexts); i++) 
+  {
+    String infotext= root["infotexts"][i]["text"].as<const char *>();
+    String infotextType= root["infotexts"][i]["display_type"].as<const char *>();
+  
+    if(infotextType=="inline")
+    {
+      infotextsRunning+=infotext;
+    }
+    else if (infotextType=="general")
+    {
+      infotextFullscreen=infotext;
+    }
+    Serial.println(infotext);
+  }
 
  int arraySize = root["departures"].size();
   Serial.println("pocet odjezdu:" + String(arraySize));
 
   int counter = 0;
 
-  for (int i = 0; (i < arraySize); i++) {
+  for (int i = 0; (i < arraySize); i++) 
+  {
     Serial.println("pruchod " + String(i));
     Serial.println("pocetElementu " + String(root[0][i].size()));
     String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
@@ -87,16 +110,20 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
     Serial.println("spoj: " + linka + " " + cil + " " + cas);
 
 #ifdef USE_OLED
-    if (counter < oledMaxPocetOdjezdu) {
+    if (counter < oledMaxPocetOdjezdu) 
+    {
       oledVykresliRadekOdjezdu(linka, cil, cas, counter);
     }
 #endif
 
 #ifdef USE_LCD
     lcdVymazRadekOdjezdu(counter);
-    if (counter < lcdMaxPocetOdjezdu) {
+    if (counter < lcdMaxPocetOdjezdu) 
+    {
       lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
-    } else {
+    }
+    else 
+    {
      
     }
 
@@ -105,6 +132,8 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
     counter++;
   }
+
+
 
 
 #ifdef USE_LCD
@@ -159,8 +188,31 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   ////////konec casu
 
 #ifdef USE_OLED
-  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo);
 
+ if(  infotextGlobalVariable!=infotextsRunning)
+  {
+    infotextOffset=0;
+  }
+  else
+  {
+    infotextOffset++;
+  }
+
+  
+ infotextGlobalVariable=infotextsRunning;
+
+ oledPeriodicDisplayUpdate();
+ /*
+ if(infotextGlobalVariable=="")
+ {
+  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo);
+ }
+ else
+ {
+  oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo);
+ }
+ */
+ 
   //oled.startscrollleft(6,7);
   oled.sendBuffer();
 #endif
