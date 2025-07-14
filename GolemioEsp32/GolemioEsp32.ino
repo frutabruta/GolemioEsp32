@@ -2,7 +2,7 @@
 //ssd1309
 //u8g2
 
-String version="20250309_1601";
+String version="20250714_1846";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
