@@ -1,5 +1,6 @@
 //tzapu WifiManagerVerion
-//ssd1309
+//ssd1336 256x128 
+// use Huge APP partitioning scheme!
 //u8g2
 
 String version="20250714_1846";
@@ -367,8 +368,10 @@ void setupDisplay()
 
 
     Wire.begin(SDA, SCL);
+  Wire.setClock(100000);   
 
 #ifdef USE_OLED
+oled.setI2CAddress(0x3C * 2);
   if (!oled.begin()) {
     Serial.println(F("SSD1306 allocation failed"));
     /*  for (;;)
@@ -386,7 +389,14 @@ void setupDisplay()
                 // Normal 1:1 pixel scale
  // oled.setTextColor(SSD1306_WHITE);  // Draw white text
 //  oled.cp437(true);
- 
+/*
+oled.firstPage();
+  do {
+    oled.setFont(u8g2_font_ncenB08_tr);  // Nice readable font
+    oled.drawStr(10, 30, "Hello World!");
+  } while (oled.nextPage());
+  delay(1000);
+ */
 #endif
 
 
