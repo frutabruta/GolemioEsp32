@@ -1,9 +1,9 @@
 //tzapu WifiManagerVerion
 //ssd1336 256x128 
-// use Huge APP partitioning scheme!
+
 //u8g2
 
-String version="20250714_1846";
+String version="20251207_0041";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -33,7 +33,7 @@ SCL - D1
 LaskaKit ESP32-C3-LPKit
 Set ESP32C3 Dev Module in Arduino IDE
 Enable USB CDC on boot
-use default partition scheme with spiffs
+ use Minimal SPIFFS partitioning scheme!
 
 Enable Erase all flash before  upload to solve the partition issue
 
@@ -368,7 +368,7 @@ void setupDisplay()
 
 
     Wire.begin(SDA, SCL);
-  Wire.setClock(100000);   
+  Wire.setClock(400000);   
 
 #ifdef USE_OLED
 oled.setI2CAddress(0x3C * 2);
@@ -381,11 +381,21 @@ oled.setI2CAddress(0x3C * 2);
   oled.setFontMode(0);
   
   oled.clearBuffer();
-  oled.setFont(czfont9);
+
+
   oled.setFontDirection(0);
-  oled.setCursor(0,9);
-  oled.print("oled init");
-  oled.sendBuffer();
+
+  #ifdef MEGAOLED
+  oled.setFont(ZIS_12_normal);
+  #else
+  oled.setFont(czfont9);
+  #endif
+ 
+  //oled.setCursor(0,9);
+  //oled.print("oled init");
+  //oled.sendBuffer();
+
+  setTextPage("oled init","","","");
                 // Normal 1:1 pixel scale
  // oled.setTextColor(SSD1306_WHITE);  // Draw white text
 //  oled.cp437(true);

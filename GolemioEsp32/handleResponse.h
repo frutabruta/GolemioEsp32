@@ -71,6 +71,10 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
     oledMaxPocetOdjezdu = 2;
     cisloRadkuInfo = 2;
   }
+
+  #ifdef MEGAOLED
+    oledMaxPocetOdjezdu = 6;
+  #endif
 #endif
 
 String infotextsRunning="";

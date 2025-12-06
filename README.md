@@ -69,11 +69,22 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
         - wait for update finished message
 
 
+## Custom BDF font export
+
+bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767" unifont-13.0.06.bdf -o unifont_custom.c -n unifont_custom -d unifont-13.0.06.bdf
+
+
+https://stncrn.github.io/u8g2-unifont-helper/
+
 
 ## Changelog
+- 20251207_0041
+    - first application of 256x128 layouts
+        - to use uncomment #define MEGAOLED 1
+
 - 20251206_1712
     - first working version of 256x128
-    
+
 - 20250714_1846
     - version number fix
 - 20250530_2231
