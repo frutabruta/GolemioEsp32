@@ -71,5 +71,10 @@ void lcdSetTextPage(String line1, String line2, String line3, String line4)
   lcd.print(line4);
 }
 
+void lcdPeriodicDisplayUpdate()
+{
+  
+}
+
 
 #endif

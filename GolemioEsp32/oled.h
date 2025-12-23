@@ -28,7 +28,7 @@ U8G2_SSD1309_128X64_NONAME0_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE ,SCL,SDA);
 
 const int vyska32 = 0;
 
-
+const int infoStartPosition=98;
 
 String nahradISO8859(String vstup) {
   vstup.replace("á", "\xE1");  //c hacek
@@ -210,6 +210,47 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek) {
    oled.drawLine(0, 52, 127, 52);
 }
 
+void oledVykresliSpodniRadekInfotext(String &cas, String infotext,int &infotextOffset, int radek) {
+
+  int vyskaRadku = 10;
+  int sloupecCas = 128;
+  int posunPc = 0;
+  int posunNc = 0;
+  int posun = 13;
+
+
+
+
+  int y0 = 64 - vyskaRadku - posun;
+  if (vyska32 == 1) {
+    posun = 1;
+    y0 = 32 - vyskaRadku - posun + 1;
+  }
+
+
+oled.setDrawColor(0);
+ oled.drawBox(0, 50, 128, 15);
+oled.setDrawColor(1);
+    
+//  oled.drawLine(0, y0, sloupecCas, y0, SSD1306_WHITE);
+
+  //oled.setTextAlignment(TEXT_ALIGN_LEFT);
+
+oled.setClipWindow(0, 52, sloupecCas-30, 64);
+ 
+  oledDrawStringFromLeft(0-infotextOffset, radek * vyskaRadku + posun, infotext);
+ oled.setMaxClipWindow();
+
+
+  //oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+ // oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+
+   
+
+   oled.drawLine(0, 52, 127, 52);
+}
+
 
 
 
@@ -250,6 +291,64 @@ void oledSetTextPage(String line1, String line2, String line3, String line4)
   oledDrawStringFromLeft(0, 30, line3);
   oledDrawStringFromLeft(0, 40, line4);
     oled.sendBuffer();
+}
+
+void oledPeriodicDisplayUpdate()
+{
+   String casPrikaz = "0:00";
+  String den = "";
+
+  //////// cas
+
+  time_t rawtime;
+  struct tm *timeinfo;
+  time(&rawtime);
+
+  timeinfo = localtime(&rawtime);
+
+
+
+  //timeinfo.hour;
+  // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
+
+  char buffer[80];
+
+  char bufferDatum[80];
+  char bufferCas[80];
+
+  //strftime(buffer, 80, "%Y%m%d",timeinfo);
+  strftime(bufferDatum, 80, "%d.%m.%Y", timeinfo);
+  strftime(bufferCas, 80, "%R", timeinfo);
+
+  int minutOdRana = 0;
+  casPrikaz = bufferCas;
+  strftime(buffer, 80, "%u", timeinfo);
+  den = buffer;
+  
+    int cisloRadkuInfo = 5;
+
+
+ if(infotextGlobalVariable=="")
+ {
+  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo);
+ }
+ else
+ {
+  oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo);
+  infotextOffset++;
+  int textWidth=oled.getStrWidth(infotextGlobalVariable.c_str());
+  
+  if(infotextOffset>textWidth)
+  {
+    infotextOffset=-infoStartPosition;
+  }
+ }
+
+
+  
+
+
+  oled.sendBuffer();
 }
 
 #endif
