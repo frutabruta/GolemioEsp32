@@ -26,9 +26,14 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   filter[0][0]["trip"]["headsign"] = true;
   filter[0][0]["route"]["short_name"] = true;
   */
+  filter["stops"][0]["stop_name"] = true;
+  filter["stops"][0]["platform_code"] = true;
   filter["departures"][0]["departure_timestamp"]["minutes"] = true;
   filter["departures"][0]["trip"]["headsign"] = true;
+  filter["departures"][0]["trip"]["is_wheelchair_accessible"] = true;
+  filter["departures"][0]["trip"]["is_air_conditioned"] = true;
   filter["departures"][0]["route"]["short_name"] = true;
+  filter["departures"][0]["stop"]["platform_code"] = true;
   
   filter["infotexts"][0]["text"] = true;
   filter["infotexts"][0]["display_type"] = true;
@@ -79,6 +84,33 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
 
 String infotextsRunning="";
 String infotextFullscreen="";
+ 
+ bool multipleStops=false;
+#ifdef MEGAOLED
+
+ int stopCount= root["stops"].size();
+
+
+
+ if(stopCount>0)
+ {
+  String stopName=root["stops"][0]["stop_name"].as<const char *>();
+  String platform=root["stops"][0]["platform_code"].as<const char *>();
+  if(stopCount>1)
+  {
+    multipleStops=true;
+    oledVykresliHlavicku("",stopName);
+  }
+  else
+  {
+    oledVykresliHlavicku(platform,stopName);
+  }
+ }
+
+
+#endif
+
+
 
  int arraySizeInfotexts = root["infotexts"].size();
    Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
@@ -111,12 +143,21 @@ String infotextFullscreen="";
     String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
     String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
     String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
-    Serial.println("spoj: " + linka + " " + cil + " " + cas);
+    String platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
+    bool isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
+    bool isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
+
+    if(!multipleStops)
+    {
+      platformCode="";
+    }
+   
+    Serial.println("spoj: " + linka + " " + cil + " "+platformCode+" " + cas);
 
 #ifdef USE_OLED
     if (counter < oledMaxPocetOdjezdu) 
     {
-      oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+      oledVykresliRadekOdjezdu(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode);
     }
 #endif
 

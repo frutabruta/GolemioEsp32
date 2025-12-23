@@ -3,7 +3,7 @@
 
 //u8g2
 
-String version="20251207_0041";
+String version="20251223_1643";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -368,7 +368,7 @@ void setupDisplay()
 
 
     Wire.begin(SDA, SCL);
-  Wire.setClock(400000);   
+  Wire.setClock(100000);   
 
 #ifdef USE_OLED
 oled.setI2CAddress(0x3C * 2);

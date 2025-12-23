@@ -70,14 +70,32 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
 
 
 ## Custom BDF font export
+The fonts are based on BDF files provided by [Pražská integrovaná doprava](https://github.com/prazska-integrovana-doprava/fonts).
 
-bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767" unifont-13.0.06.bdf -o unifont_custom.c -n unifont_custom -d unifont-13.0.06.bdf
+
+```
+bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_bold.bdf -o ZIS_12_bold.h -n ZIS_12_bold -d ZIS_12_bold.bdf
+bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_normal.bdf -o ZIS_12_normal.h -n ZIS_12_normal -d ZIS_12_normal.bdf
+bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_17_normal.bdf -o ZIS_17_normal.h -n ZIS_17_normal -d ZIS_17_normal.bdf
+bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_17_bold.bdf -o ZIS_17_bold.h -n ZIS_17_bold -d ZIS_17_bold.bdf
+```
 
 
 https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251223_1643
+    - fonts: added narrow space
+    - handleResponse
+        - added wheelchair and air conditioning
+        - added platform
+    - oled.h
+        - added blinking colon
+        - many rewrites
+        - fix of 128x64 part
+
+
 - 20251207_0041
     - first application of 256x128 layouts
         - to use uncomment #define MEGAOLED 1
