@@ -286,11 +286,12 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, S
   oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
   #endif
 
-
+/*
   if(cas.length()<2)
   {
     cas=" "+cas;
   }
+  */
   oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);
   
 }
@@ -399,6 +400,15 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek, bool vykre
     oledDrawStringFromRight(sloupecCas-13, radek * vyskaRadku + posun,colon, true);   
   }
   #endif
+    
+  /*
+  uint16_t w1 = oled.getUTF8Width("1");
+  Serial.println("sirka1 "+String(w1));
+ uint16_t w2 = oled.getUTF8Width("2");
+  Serial.println("sirka2 "+String(w2));
+   uint16_t wzob = oled.getUTF8Width("<");
+  Serial.println("sirka< "+String(wzob));
+*/
 }
 
 void oledVykresliHlavicku(String nastupiste, String nazev)

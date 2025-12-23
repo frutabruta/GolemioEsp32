@@ -3,7 +3,7 @@
 
 //u8g2
 
-String version="20251223_1643";
+String version="20251223_2246";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -365,9 +365,7 @@ void vypisChybuNaDispleje(String text) {
 void setupDisplay()
 {
   Serial.println("setupDisplay");
-
-
-    Wire.begin(SDA, SCL);
+  Wire.begin(SDA, SCL);
   Wire.setClock(100000);   
 
 #ifdef USE_OLED

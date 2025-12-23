@@ -71,7 +71,7 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
 
 ## Custom BDF font export
 The fonts are based on BDF files provided by [Pražská integrovaná doprava](https://github.com/prazska-integrovana-doprava/fonts).
-
+To fix number bounding box, -b 1 parameter might be needed.
 
 ```
 bdfconv -v -f 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_bold.bdf -o ZIS_12_bold.h -n ZIS_12_bold -d ZIS_12_bold.bdf
@@ -85,6 +85,10 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251223_2246
+    - czfonts
+        - number 1 bounding box fix
+    
 - 20251223_1643
     - fonts: added narrow space
     - handleResponse
