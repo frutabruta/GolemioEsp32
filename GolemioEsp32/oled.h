@@ -248,6 +248,30 @@ void oledDrawStringFromLeft(int sloupec, int radek, String obsah)
   oled.drawUTF8(sloupec,radek, obsah.c_str());
 }
 
+void oledVykresliHlavicku(String nastupiste, String nazev)
+{
+  #ifdef MEGAOLED
+  if(nastupiste!="")
+  {
+  oled.setFont(ZIS_17_bold);  
+  oled.drawLine(0, 20, 255, 20);
+  oledDrawStringFromLeft(53, 16, nazev);
+
+  oled.setDrawColor(1); 
+  oled.drawXBM(0, 0, CIRCLE_WIDTH, CIRCLE_HEIGHT, CIRCLE_XBM);
+  oled.setDrawColor(0); 
+  oledDrawStringFromLeft(12, 16, nastupiste);
+  oled.setDrawColor(1); 
+  }
+  else
+  {
+  oled.setFont(ZIS_17_bold);  
+  oled.drawLine(0, 20, 255, 20);
+  oledDrawStringFromLeft(3, 16, nazev);
+  }
+  #endif
+}
+
 void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, String platform="") 
 {
   #ifdef MEGAOLED
@@ -299,16 +323,16 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, S
 void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, bool accessible, bool airConditioned, String platform="") 
 {
   #ifdef MEGAOLED
-  int sloupecCile = 53;
-  int sloupecLinky = 23;
-  int sloupecVozicku = 26;
-  int sloupecVlocky = 39;
-  int sloupecNastupiste = 231;
-  int vyskaRadku = 14;
-  int sloupecCasu = 254;
-  int pravyOkrajCile = 228;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  int offsetRadku=37;
+  const int sloupecCile = 53;
+  const int sloupecLinky = 23;
+  const int sloupecVozicku = 26;
+  const int sloupecVlocky = 39;
+  const int sloupecNastupiste = 231;
+  const int vyskaRadku = 14;
+  const int sloupecCasu = 254;
+  const int pravyOkrajCile = 228;
+  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+  const int offsetRadku=37;
   oled.setFont(ZIS_12_bold);
   oledDrawStringFromRight(sloupecLinky, radek * vyskaRadku+offsetRadku, linka,false);
 
@@ -331,13 +355,13 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, b
 
 
   #else
-  int sloupecCile = 25;
-  int sloupecLinky = 0;
-  int vyskaRadku = 10;
-  int sloupecCasu = 125;
-  int pravyOkrajCile = 100;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  int offsetRadku=10;
+  const int sloupecCile = 25;
+  const int sloupecLinky = 0;
+  const int vyskaRadku = 10;
+  const int sloupecCasu = 128;
+  const int pravyOkrajCile = 100;
+  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+  const int offsetRadku=10;
   oledDrawStringFromLeft(sloupecLinky, radek * vyskaRadku+offsetRadku, linka);
   #endif
 
@@ -349,26 +373,16 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, b
   oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
   #endif
 
-/*
-  if(cas.length()<2)
-  {
-    cas=" "+cas;
-  }
-  */
-  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);
-  
+  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);  
 }
 
 void oledVykresliSpodniRadekDatum(String &cas, String den, int radek, bool vykresliDvojtecku=true) 
 {
 
   #ifdef MEGAOLED
-  int vyskaRadku = 10;
-  int sloupecCas = 255;
-  int posunPc = 0;
-  int posunNc = 0;
-  int posun = 13;
-  int datumOffset=126;
+  const int vyskaRadku = 10;
+  const int sloupecCas = 255;
+  const int datumOffset=126;
   oled.setFont(ZIS_12_normal);
   oled.drawLine(0, datumOffset-12, 255, datumOffset-12);
   oled.setDrawColor(0);
@@ -382,55 +396,31 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek, bool vykre
     oledDrawStringFromRight(sloupecCas-13, datumOffset,colon, false);   
   }
   #else
-  int vyskaRadku = 10;
-  int sloupecCas = 128;
-  int posunPc = 0;
-  int posunNc = 0;
-  int posun = 13;
-  int datumOffset=0;
+  const int vyskaRadku = 10;
+  const int sloupecCas = 128;
+  const int datumOffset=63;
   oled.setDrawColor(0);
   oled.drawBox(0, datumOffset-11, 128, 12); //FIX!!!
   oled.setDrawColor(1);
-  oled.drawLine(0, 52, 127, 52);   
-  oledDrawStringFromLeft(0, radek * vyskaRadku + posun, den);
-  oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, true);   
+  oled.drawLine(0, 52, 127, 52);
+
+/*
+  for(int i=0;i<128;i++)
+      {
+        if((i%2)==0)
+        {
+          oled.drawPixel(i,52);
+        }
+   
+      }
+*/
+
+  oledDrawStringFromLeft(0, datumOffset, den);
+  oledDrawStringFromRight(sloupecCas, datumOffset, cas, true);   
   if(vykresliDvojtecku)
   {
     String colon=":";
-    oledDrawStringFromRight(sloupecCas-13, radek * vyskaRadku + posun,colon, true);   
-  }
-  #endif
-    
-  /*
-  uint16_t w1 = oled.getUTF8Width("1");
-  Serial.println("sirka1 "+String(w1));
- uint16_t w2 = oled.getUTF8Width("2");
-  Serial.println("sirka2 "+String(w2));
-   uint16_t wzob = oled.getUTF8Width("<");
-  Serial.println("sirka< "+String(wzob));
-*/
-}
-
-void oledVykresliHlavicku(String nastupiste, String nazev)
-{
-  #ifdef MEGAOLED
-  if(nastupiste!="")
-  {
-  oled.setFont(ZIS_17_bold);  
-  oled.drawLine(0, 20, 255, 20);
-  oledDrawStringFromLeft(53, 16, nazev);
-
-  oled.setDrawColor(1); 
-  oled.drawXBM(0, 0, CIRCLE_WIDTH, CIRCLE_HEIGHT, CIRCLE_XBM);
-  oled.setDrawColor(0); 
-  oledDrawStringFromLeft(12, 16, nastupiste);
-  oled.setDrawColor(1); 
-  }
-  else
-  {
-  oled.setFont(ZIS_17_bold);  
-  oled.drawLine(0, 20, 255, 20);
-  oledDrawStringFromLeft(3, 16, nazev);
+    oledDrawStringFromRight(sloupecCas-13, datumOffset,colon, true);     
   }
   #endif
 }
@@ -438,14 +428,13 @@ void oledVykresliHlavicku(String nastupiste, String nazev)
 void oledVykresliSpodniRadekInfotext(String &cas, String infotext,int &infotextOffset, int radek, bool vykresliDvojtecku=true) 
 {
   #ifdef MEGAOLED
-  int sloupecCas = 255;
-  int datumOffset=126;
+  const int sloupecCas = 255;
+  const int datumOffset=126;
   oled.setFont(ZIS_12_normal);
   oled.drawLine(0, datumOffset-12, 255, datumOffset-12);
-  int posun = 13;
   oled.setDrawColor(0);
   oled.drawBox(0, datumOffset-11, 256, 15);
-  oled.setDrawColor(1);    
+  oled.setDrawColor(1);
   oled.setClipWindow(0, datumOffset-12, sloupecCas-30, 127); 
   oledDrawStringFromLeft(0-infotextOffset, datumOffset, infotext);
   oled.setMaxClipWindow();
@@ -457,29 +446,25 @@ void oledVykresliSpodniRadekInfotext(String &cas, String infotext,int &infotextO
     oledDrawStringFromRight(sloupecCas-14, datumOffset,colon, false);   
   }
   #else
-  int vyskaRadku = 10;
-  int sloupecCas = 128;
-  int posun = 13;
-
-  oled.drawLine(0, 52, 127, 52);
- // oledDrawStringFromLeft(0, radek * vyskaRadku + posun, den); //not needed when infotext is active
- // oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);    
+  const int vyskaRadku = 10;
+  const int sloupecCas = 128;
+  const int datumOffset=63;
+  
   oled.setDrawColor(0);
   oled.drawBox(0, 50, 128, 15);
   oled.setDrawColor(1);    
   oled.setClipWindow(0, 52, sloupecCas-30, 64); 
-  oledDrawStringFromLeft(0-infotextOffset, radek * vyskaRadku + posun, infotext);
+  oledDrawStringFromLeft(0-infotextOffset, datumOffset, infotext);
   oled.setMaxClipWindow();
- // oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
+  oled.drawLine(0, 52, 127, 52);    
+  oledDrawStringFromRight(sloupecCas, datumOffset, cas, true);   
   if(vykresliDvojtecku)
   {
     String colon=":";
-    oledDrawStringFromRight(sloupecCas-14, radek * vyskaRadku + posun,colon, false);   
+    oledDrawStringFromRight(sloupecCas-14,datumOffset,colon, true);   
   }
   #endif   
 }
-
-
 
 void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int radek) 
 {
@@ -590,6 +575,7 @@ casPrikaz=bufferCas;
   den = buffer;
   
     int cisloRadkuInfo = 5;
+
 
 
  if(infotextGlobalVariable=="")

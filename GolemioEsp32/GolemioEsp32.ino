@@ -3,7 +3,8 @@
 
 //u8g2
 
-String version="20251223_2246";
+
+String version="20251230_1626";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -171,7 +172,7 @@ String infotextGlobalVariable="";
 
 //default attributes
 String klic = "xxx";
-String parametry = "?cisIds=58791&minutesBefore=1&minutesAfter=60&limit=5&mode=departures&includeMetroTrains=true&order=real";
+String parametry = "?aswIds=511_2&minutesBefore=1&minutesAfter=60&limit=5&mode=departures&order=real";
 String zakladAdresy = "https://api.golemio.cz/v2/pid/departureboards";  //public API
 String celaAdresa = "";                                                    //public API
 

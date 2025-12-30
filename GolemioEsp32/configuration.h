@@ -20,7 +20,7 @@
 
 //#define CUSTOM 1 //Do-IT ESP32 with LCD display
 //uncomment to enable debug messages
-#define DEBUGGING 1
+//#define DEBUGGING 1
 
 
 //DISPLAY SETUP SECTION
@@ -29,7 +29,7 @@
 #define USE_OLED 1
 
 //also uncomment so use 256x128 with SSD1363 driver
-#define MEGAOLED 1
+//#define MEGAOLED 1
 
 //uncomment to use 20x4 I2C LCD on address 0x3F
 //#define USE_LCD 1

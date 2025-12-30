@@ -247,17 +247,7 @@ String infotextFullscreen="";
  infotextGlobalVariable=infotextsRunning;
 
  oledPeriodicDisplayUpdate();
- /*
- if(infotextGlobalVariable=="")
- {
-  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo);
- }
- else
- {
-  oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo);
- }
- */
- 
+
   //oled.startscrollleft(6,7);
   oled.sendBuffer();
 #endif

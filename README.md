@@ -85,6 +85,13 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251230_1626
+    - 3D files
+        - added long version of display pole
+    - oledVykresliSpodniRadekInfotext
+        - time display fix
+    - oledVykresliSpodniRadekDatum
+        - size fixes
 - 20251223_2246
     - czfonts
         - number 1 bounding box fix
