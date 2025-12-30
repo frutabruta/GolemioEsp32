@@ -576,7 +576,10 @@ casPrikaz=bufferCas;
   
     int cisloRadkuInfo = 5;
 
+//xxxx
 
+
+//infotextGlobalVariable="Příliš žluťoučký kůň úpěl ďábelské ódy.";
 
  if(infotextGlobalVariable=="")
  {

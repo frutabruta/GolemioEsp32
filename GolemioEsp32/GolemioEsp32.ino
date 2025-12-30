@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20251230_1626";
+String version="20251230_2226";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -34,7 +34,11 @@ SCL - D1
 LaskaKit ESP32-C3-LPKit
 Set ESP32C3 Dev Module in Arduino IDE
 Enable USB CDC on boot
- use Minimal SPIFFS partitioning scheme!
+
+Tested with esp32 package by Espressif Systems v3.0.7
+
+For 256x128 use Minimal SPIFFS partitioning scheme!
+For 128x64 use default 4MB with SPIFFs
 
 Enable Erase all flash before  upload to solve the partition issue
 
