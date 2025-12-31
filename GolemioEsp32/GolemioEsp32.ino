@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20251231_1817";
+String version="20251231_2259";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -660,7 +660,7 @@ void saveSpiffs()
 void setupManager() 
 {
   // WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
-  m.setConfigPortalTimeout(120);
+  wm.setConfigPortalTimeout(120);
   wm.setBreakAfterConfig(true);
   Serial.println("\n Starting");  
   //if (wm_nonblocking) wm.setConfigPortalBlocking(false); 

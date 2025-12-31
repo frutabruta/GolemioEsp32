@@ -109,63 +109,80 @@ void handleResponse(HTTPClient &http)
 
   int counter = 0;
 
-  for (int i = 0; (i < arraySize); i++) 
+ // infotextFullscreen="Příliš žluťoučký kůň úpěl ďábelské ódy.";
+
+
+//  infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
+//  infotextFullscreen+=infotextFullscreen;
+
+ // infotextFullscreen=splitText(infotextFullscreen);
+
+  if(infotextFullscreen=="")
   {
-    Serial.println("pruchod " + String(i));
-    Serial.println("pocetElementu " + String(root[0][i].size()));
-    String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
-    String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
-    String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
-    String platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
-    String direction = root["departures"][i]["trip"]["direction"].as<const char *>();
-    bool isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
-    bool isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
-
-    if(!multipleStops)
+    for (int i = 0; (i < arraySize); i++) 
     {
-      platformCode="";
-    }
-    else
-    {
-      direction="";
-    }
-   
-    Serial.println("spoj: " + linka + " " + cil + " "+platformCode+" " + cas);
+      Serial.println("pruchod " + String(i));
+      Serial.println("pocetElementu " + String(root[0][i].size()));
+      String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
+      String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
+      String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
+      String platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
+      String direction = root["departures"][i]["trip"]["direction"].as<const char *>();
+      bool isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
+      bool isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
 
-    #ifdef USE_OLED
-      if (counter < oledMaxPocetOdjezdu) 
+      if(!multipleStops)
       {
-        #ifdef MEGAOLED
-          oledVykresliRadekOdjezdu(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
-        #else 
-          oledVykresliRadekOdjezdu(linka, cil, cas, counter);
-        #endif
+        platformCode="";
       }
-    #endif
+      else
+      {
+        direction="";
+      }
+    
+      Serial.println("spoj: " + linka + " " + cil + " "+platformCode+" " + cas);
+
+      #ifdef USE_OLED
+        if (counter < oledMaxPocetOdjezdu) 
+        {
+          #ifdef MEGAOLED
+            oledVykresliRadekOdjezduMega(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
+          #else 
+            oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+          #endif
+        }
+      #endif
+
+      #ifdef USE_LCD
+        lcdVymazRadekOdjezdu(counter);
+        if (counter < lcdMaxPocetOdjezdu) 
+        {
+          lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
+        }
+        else 
+        {
+        
+        }
+      #endif
+        counter++;
+    }
 
     #ifdef USE_LCD
-      lcdVymazRadekOdjezdu(counter);
-      if (counter < lcdMaxPocetOdjezdu) 
+      if(arraySize<lcdMaxPocetOdjezdu)
       {
-        lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
-      }
-      else 
-      {
-      
+        for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
+        {
+          lcdVymazRadekOdjezdu(j);
+        }
       }
     #endif
-      counter++;
+  }
+  else
+  {
+    oledSetGlobalInfotext(infotextFullscreen);
   }
 
-  #ifdef USE_LCD
-    if(arraySize<lcdMaxPocetOdjezdu)
-    {
-      for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
-      {
-        lcdVymazRadekOdjezdu(j);
-      }
-    }
-  #endif
+ 
 
   String casPrikaz = "0:00";
   String den = "";

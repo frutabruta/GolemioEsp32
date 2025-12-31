@@ -67,6 +67,7 @@
   const int sloupecSmeru=220;
   const int maxSirkaTextu = sloupecCile - pravyOkrajCile;    
   const int oledMaxPocetOdjezdu = 6;
+  const int maxDelkaRadku=256;
 #else
   const int sloupecCile = 25;
   const int sloupecLinky = 18;
@@ -76,6 +77,7 @@
   const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
   const int offsetRadku=10;
   const int oledMaxPocetOdjezdu = 5;
+  const int maxDelkaRadku=128;
 #endif
 
 
@@ -321,22 +323,48 @@ void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int 
 
 
 
-void oledSetTextPage(String line1, String line2, String line3, String line4)
+void oledSetTextPage(String line1, String line2="", String line3="", String line4="",String line5="",String line6="")
 {
+  #ifdef MEGAOLED 
+    oled.setFont(ZIS_12_normal);
+  #else
+    oled.setFont(czfont9);
+  #endif;
   oled.clearBuffer();
   oledDrawStringFromLeft(0, 0*vyskaRadku+offsetRadku, line1);
   oledDrawStringFromLeft(0, 1*vyskaRadku+offsetRadku, line2);
   oledDrawStringFromLeft(0, 2*vyskaRadku+offsetRadku, line3);
   oledDrawStringFromLeft(0, 3*vyskaRadku+offsetRadku, line4);
+  oledDrawStringFromLeft(0, 4*vyskaRadku+offsetRadku, line5);
+  #ifdef MEGAOLED
+    oledDrawStringFromLeft(0, 5*vyskaRadku+offsetRadku, line6);
+  #endif
+
   oled.sendBuffer();
 }
-
+void oledSetTextPageRaw(String line1, String line2="", String line3="", String line4="",String line5="",String line6="")
+{
+  #ifdef MEGAOLED 
+    oled.setFont(ZIS_12_normal);
+  #else
+    oled.setFont(czfont9);
+  #endif;
+  oledDrawStringFromLeft(0, 0*vyskaRadku+offsetRadku, line1);
+  oledDrawStringFromLeft(0, 1*vyskaRadku+offsetRadku, line2);
+  oledDrawStringFromLeft(0, 2*vyskaRadku+offsetRadku, line3);
+  oledDrawStringFromLeft(0, 3*vyskaRadku+offsetRadku, line4);
+  oledDrawStringFromLeft(0, 4*vyskaRadku+offsetRadku, line5);
+  #ifdef MEGAOLED
+    oledDrawStringFromLeft(0, 5*vyskaRadku+offsetRadku, line6);
+  #endif
+}
+/*
 void oledSetGlobalInfotext(String input)
 {
-  int delkaTextu=20;
+  int delkaTextu=35;
   oledSetTextPage(input.substring(0*delkaTextu,delkaTextu),input.substring(1*delkaTextu,2*delkaTextu),input.substring(2*delkaTextu,3*delkaTextu),input.substring(3*delkaTextu,4*delkaTextu));
 }
-
+*/
 
 void oledPeriodicDisplayUpdate()
 {
@@ -405,6 +433,101 @@ void oledPeriodicDisplayUpdate()
   }
   oled.sendBuffer();
 }
+
+
+
+void oledSetGlobalInfotext(String infotextFullscreen)
+{
+  #ifdef MEGAOLED 
+    oled.setFont(ZIS_12_normal);
+  #else
+    oled.setFont(czfont9);
+  #endif;
+  
+  int start = 0;
+  String output="";
+  const int n = infotextFullscreen.length();
+
+  String stringArray[6];
+  int stringIndex=0;
+
+  String currentString="";
+
+  // Skip leading spaces (if any)
+  while (start < n && infotextFullscreen[start] == ' ') 
+  {
+    start++;
+  }
+
+
+  while (start < n) 
+  {
+    int end = infotextFullscreen.indexOf(' ', start);
+    bool finished=false;
+    if (end == -1)
+    {
+       end = n;  // last token to end
+      finished=true;
+    }
+
+    // Extract token
+    String token = infotextFullscreen.substring(start, end);
+
+    if (token.length() > 0) 
+    {
+      Serial.println(token);
+      output+="*"+token;
+      
+      String testString=currentString;
+      
+      if(currentString!="")
+      {
+        testString+=" ";
+      }
+      testString+=token;
+
+
+      uint16_t w = oled.getUTF8Width(testString.c_str());
+      if(w<maxDelkaRadku)
+      {
+        if(currentString!="")
+        {
+          currentString+=" ";
+        }
+        
+        currentString+=token;
+
+        if(finished)
+        {
+          stringArray[stringIndex]=currentString;
+          stringIndex++; 
+        }
+      }
+      else
+      {
+        if(stringIndex<6)
+        {       
+          stringArray[stringIndex]=currentString;
+          stringIndex++; 
+          currentString=token;
+        }
+      }
+    }
+
+    // Move past spaces to next token
+    start = end;
+    while (start < n && infotextFullscreen[start] == ' ')
+    {
+      start++;
+    } 
+  }
+  
+  oledSetTextPageRaw(stringArray[0],stringArray[1],stringArray[2],stringArray[3],stringArray[4],stringArray[5]);
+  //return output;
+
+}
+
+
 
 #endif //end of OLED
 
