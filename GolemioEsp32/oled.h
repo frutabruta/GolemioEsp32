@@ -2,7 +2,7 @@
 
 #ifdef USE_OLED
 #include <U8g2lib.h>
-
+#include "conversions.h"
 
 
   #ifdef MEGAOLED
@@ -61,7 +61,6 @@ const uint8_t CIRCLE_HEIGHT = 19;
 //Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
-;
 
 
 #ifdef MEGAOLED
@@ -79,101 +78,8 @@ const int vyska32 = 0;
 
 const int infoStartPosition=98;
 
-String nahradISO8859(String vstup) 
-{
-  vstup.replace("á", "\xE1");  //c hacek
-  vstup.replace("Á", "\xC1");  //C hacek
-  vstup.replace("č", "\xE8");  //c hacek
-  vstup.replace("Č", "\xC8");  //C hacek
-  vstup.replace("ď", "\xEF");  //d hacek
-  vstup.replace("Ď", "\xCF");  //D hacek
-
-  vstup.replace("é", "\xE9");  //
-
-  vstup.replace("É", "\xC9");
-  vstup.replace("ě", "\xEC");  //e hacek
-  vstup.replace("Ě", "\xCC");
-  vstup.replace("í", "\xED");  //dlouhe i
-  vstup.replace("Í", "\xCD");  //dlouhe I
-  vstup.replace("ň", "\xF2");
-  vstup.replace("Ň", "\xD2");
-  vstup.replace("ó", "\xF3");
-  vstup.replace("Ó", "\xD3");
-  vstup.replace("ř", "\xF8");
-  vstup.replace("Ř", "\xD8");
-  vstup.replace("š", "\xB9");
-  vstup.replace("Š", "\xA9");
-  vstup.replace("ť", "\xBB");
-  vstup.replace("Ť", "\xAB");
-  vstup.replace("ú", "\xFA");
-  vstup.replace("Ú", "\xDA");
-  vstup.replace("ů", "\xF9");
-  vstup.replace("Ů", "\xD9");
-  vstup.replace("ý", "\xFD");
-  vstup.replace("Ý", "\xDD");
-  vstup.replace("ž", "\xBE");
-  vstup.replace("Ž", "\xAE");
-
-  return vstup;
-}
-
-String nahradDiakritiku(String vstup) 
-{
-  vstup.replace("á", "a");  //c hacek
-  vstup.replace("Á", "A");  //C hacek
-  vstup.replace("č", "c");  //c hacek
-  vstup.replace("Č", "C");  //C hacek
-  vstup.replace("ď", "d");  //d hacek
-  vstup.replace("Ď", "D");  //D hacek
-
-  vstup.replace("é", "e");  //
-
-  vstup.replace("É", "E");
-  vstup.replace("ě", "e");  //e hacek
-  vstup.replace("Ě", "E");
-  vstup.replace("í", "i");  //dlouhe i
-  vstup.replace("Í", "I");  //dlouhe I
-  vstup.replace("ň", "n");
-  vstup.replace("Ň", "N");
-  vstup.replace("ó", "o");
-  vstup.replace("Ó", "O");
-  vstup.replace("ř", "r");
-  vstup.replace("Ř", "R");
-  vstup.replace("š", "s");
-  vstup.replace("Š", "S");
-  vstup.replace("ť", "t");
-  vstup.replace("Ť", "T");
-  vstup.replace("ú", "u");
-  vstup.replace("Ú", "U");
-  vstup.replace("ů", "u");
-  vstup.replace("Ů", "U");
-  vstup.replace("ý", "y");
-  vstup.replace("Ý", "Y");
-  vstup.replace("ž", "z");
-  vstup.replace("Ž", "Z");
-
-  return vstup;
-}
-
-String  cisloDoDne(int vstup) 
-{
-  String vystup = "";
 
 
-  if ((vstup < 0) || (vstup > 7)) {
-    return "";
-  }
-
-  #ifdef BIGOLED
- // vystup= nahradDiakritiku(poleDnu[vstup]);
- vystup=poleDnu[vstup];
-  #else
-  vystup= nahradISO8859(poleDnu[vstup]);
-  #endif
-
-
-  return vystup;
-}
 
 
 
@@ -275,23 +181,24 @@ void oledVykresliHlavicku(String nastupiste, String nazev)
 void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, String platform="") 
 {
   #ifdef MEGAOLED
-  int sloupecCile = 25;
-  int sloupecNastupiste = 235;
-  int sloupecLinky = 3;
-  int vyskaRadku = 14;
-  int sloupecCasu = 252;
-  int pravyOkrajCile = 228;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  int offsetRadku=37;
+  const int sloupecCile = 25;
+  const int sloupecNastupiste = 235;
+  const int sloupecLinky = 3;
+  const int vyskaRadku = 14;
+  const int sloupecCasu = 252;
+  const int pravyOkrajCile = 228;
+  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+  const int offsetRadku=37;
+ 
   oled.setFont(ZIS_12_bold);
   #else
-  int sloupecCile = 25;
-  int sloupecLinky = 0;
-  int vyskaRadku = 10;
-  int sloupecCasu = 125;
-  int pravyOkrajCile = 100;
-  int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  int offsetRadku=10;
+  const int sloupecCile = 25;
+  const int sloupecLinky = 0;
+  const int vyskaRadku = 10;
+  const int sloupecCasu = 125;
+  const int pravyOkrajCile = 100;
+  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+  const int offsetRadku=10;
   #endif
 
   oledDrawStringFromLeft(sloupecLinky, radek * vyskaRadku+offsetRadku, linka);
@@ -299,12 +206,15 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, S
  // oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradDiakritiku(cil).substring(0, 17));
   oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, cil.substring(0, 30));
 
-  #ifdef MEGAOLED
-  if(platform!="")
-  {
-  oledDrawStringFromLeft(sloupecNastupiste, radek * vyskaRadku+offsetRadku, platform);
-  }
-  #endif
+    #ifdef MEGAOLED
+      if(platform!="")
+      {
+        oledDrawStringFromLeft(sloupecNastupiste, radek * vyskaRadku+offsetRadku, platform);
+      }
+      
+     
+      
+    #endif
 
   #else  
   oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
@@ -320,7 +230,7 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, S
   
 }
 
-void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, bool accessible, bool airConditioned, String platform="") 
+void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, bool accessible, bool airConditioned, String platform="", String direction="") 
 {
   #ifdef MEGAOLED
   const int sloupecCile = 53;
@@ -328,6 +238,7 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, b
   const int sloupecVozicku = 26;
   const int sloupecVlocky = 39;
   const int sloupecNastupiste = 231;
+  const int sloupecSmeru=220;
   const int vyskaRadku = 14;
   const int sloupecCasu = 254;
   const int pravyOkrajCile = 228;
@@ -349,6 +260,11 @@ void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, b
   if(platform!="")
   {
     oledDrawStringFromRight(sloupecNastupiste, radek * vyskaRadku+offsetRadku, platform, true);
+  }
+  
+  if(!direction.isEmpty())
+  {
+    oledDrawStringFromLeft(sloupecSmeru,radek * vyskaRadku+offsetRadku,dirToArrow(direction));
   }
   
   
@@ -605,3 +521,8 @@ casPrikaz=bufferCas;
 }
 
 #endif
+
+
+
+
+

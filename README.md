@@ -73,6 +73,7 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
 The fonts are based on BDF files provided by [Pražská integrovaná doprava](https://github.com/prazska-integrovana-doprava/fonts).
 To fix number bounding box, -b 1 parameter might be needed.
 
+
 ```
 bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_bold.bdf -o ZIS_12_bold.h -n ZIS_12_bold -d ZIS_12_bold.bdf
 bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_normal.bdf -o ZIS_12_normal.h -n ZIS_12_normal -d ZIS_12_normal.bdf
@@ -80,11 +81,30 @@ bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" 
 bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_17_bold.bdf -o ZIS_17_bold.h -n ZIS_17_bold -d ZIS_17_bold.bdf
 ```
 
+ASCII printable: 32–127
+Latin-1 Supplement: 160–255 (á, é, í, ó, ú, ý)
+Latin Extended-A: 256–383 (ě, ř, č, š, ť, ž, ď, ň, ů)
+Arrows: 8592–8601 (← ↑ → ↓ ↖ ↗ ↘ ↙)
+Extras: thin space (8201), ♿ (9855), ✈ (9992), ✴ (10052)
 
+
+Optimised commands:
+```
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_12_normal.bdf -o ZIS_12_normal.h -n ZIS_12_normal -d ZIS_12_normal.bdf
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_12_bold.bdf   -o ZIS_12_bold.h   -n ZIS_12_bold   -d ZIS_12_bold.bdf
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_17_normal.bdf -o ZIS_17_normal.h -n ZIS_17_normal -d ZIS_17_normal.bdf
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_17_bold.bdf -o ZIS_17_bold.h -n ZIS_17_bold -d ZIS_17_bold.bdf
+```
 https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251231_1322
+    - 256x128
+        - added arrows to fonts
+        - show directions when 1 stop is selected
+    - conversion tables moved to a separate .h file
+
 - 20251230_2226
     - fixed fonts number 1 width
         - ZIS_12_bold.h

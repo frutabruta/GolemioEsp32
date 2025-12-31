@@ -30,11 +30,14 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   filter["stops"][0]["platform_code"] = true;
   filter["departures"][0]["departure_timestamp"]["minutes"] = true;
   filter["departures"][0]["trip"]["headsign"] = true;
+  #ifdef MEGAOLED
   filter["departures"][0]["trip"]["is_wheelchair_accessible"] = true;
-  filter["departures"][0]["trip"]["is_air_conditioned"] = true;
-  filter["departures"][0]["route"]["short_name"] = true;
+  filter["departures"][0]["trip"]["is_air_conditioned"] = true; 
+  filter["departures"][0]["trip"]["direction"] = true; 
   filter["departures"][0]["stop"]["platform_code"] = true;
   
+  #endif
+  filter["departures"][0]["route"]["short_name"] = true;
   filter["infotexts"][0]["text"] = true;
   filter["infotexts"][0]["display_type"] = true;
   Serial.print("Velikost filtru:");
@@ -144,6 +147,7 @@ String infotextFullscreen="";
     String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
     String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
     String platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
+    String direction = root["departures"][i]["trip"]["direction"].as<const char *>();
     bool isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
     bool isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
 
@@ -151,13 +155,17 @@ String infotextFullscreen="";
     {
       platformCode="";
     }
+    else
+    {
+      direction="";
+    }
    
     Serial.println("spoj: " + linka + " " + cil + " "+platformCode+" " + cas);
 
 #ifdef USE_OLED
     if (counter < oledMaxPocetOdjezdu) 
     {
-      oledVykresliRadekOdjezdu(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode);
+      oledVykresliRadekOdjezdu(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
     }
 #endif
 
