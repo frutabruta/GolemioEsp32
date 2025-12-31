@@ -71,7 +71,7 @@ U8G2_SSD1309_128X64_NONAME0_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE ,SCL,SDA);
 //U8G2_SSD1363_256X128_F_2ND_HW_I2C(U8G2_R0, U8X8_PIN_NONE);
 
 
-#define BIGOLED 1 // fixed with u8g2 if using SSD1309 2.42" from LaskaKit to replace Czech characters
+
 
 
 const int vyska32 = 0;

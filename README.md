@@ -99,6 +99,9 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251231_1402
+    - moved BIGOLED definition to fix date on 256x128
+    
 - 20251231_1322
     - 256x128
         - added arrows to fonts

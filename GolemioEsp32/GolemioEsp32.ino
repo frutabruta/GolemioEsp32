@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20251231_1322";
+String version="20251231_1402";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
