@@ -66,6 +66,7 @@
   const int sloupecNastupiste = 231;
   const int sloupecSmeru=220;
   const int maxSirkaTextu = sloupecCile - pravyOkrajCile;    
+  const int oledMaxPocetOdjezdu = 6;
 #else
   const int sloupecCile = 25;
   const int sloupecLinky = 18;
@@ -74,6 +75,7 @@
   const int pravyOkrajCile = 100;
   const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
   const int offsetRadku=10;
+  const int oledMaxPocetOdjezdu = 5;
 #endif
 
 
@@ -317,15 +319,24 @@ void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int 
 }
 
 
+
+
 void oledSetTextPage(String line1, String line2, String line3, String line4)
 {
   oled.clearBuffer();
-  oledDrawStringFromLeft(0, 10, line1);
-  oledDrawStringFromLeft(0, 20, line2);
-  oledDrawStringFromLeft(0, 30, line3);
-  oledDrawStringFromLeft(0, 40, line4);
+  oledDrawStringFromLeft(0, 0*vyskaRadku+offsetRadku, line1);
+  oledDrawStringFromLeft(0, 1*vyskaRadku+offsetRadku, line2);
+  oledDrawStringFromLeft(0, 2*vyskaRadku+offsetRadku, line3);
+  oledDrawStringFromLeft(0, 3*vyskaRadku+offsetRadku, line4);
   oled.sendBuffer();
 }
+
+void oledSetGlobalInfotext(String input)
+{
+  int delkaTextu=20;
+  oledSetTextPage(input.substring(0*delkaTextu,delkaTextu),input.substring(1*delkaTextu,2*delkaTextu),input.substring(2*delkaTextu,3*delkaTextu),input.substring(3*delkaTextu,4*delkaTextu));
+}
+
 
 void oledPeriodicDisplayUpdate()
 {

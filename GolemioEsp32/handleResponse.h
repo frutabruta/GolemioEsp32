@@ -1,118 +1,92 @@
-void handleResponse(HTTPClient &http) {
- // const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
- // Serial.println("capacity:" + String(capacity));
-  //DynamicJsonDocument root(9000);
-
- Serial.println("handleResponse");
-
-
+void handleResponse(HTTPClient &http) 
+{
+  #ifdef DEBUGGING
+    Serial.println("handleResponse");
+  #endif
+  
   String httpResult = http.getString();
-#ifdef DEBUGGING
-  Serial.println(httpResult);
-#endif
+
+  #ifdef DEBUGGING
+    Serial.println(httpResult);
+  #endif
   /*
       to use http stream ChunkDecodingStream may help
     https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
-DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
-*/
-  JsonDocument root;
-
-  //DynamicJsonDocument root(9000);
-
-  JsonDocument filter;
-  //StaticJsonDocument<200> filter;
-  /*
-  filter[0][0]["departure"]["minutes"] = true;
-  filter[0][0]["trip"]["headsign"] = true;
-  filter[0][0]["route"]["short_name"] = true;
+  DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
   */
+
+  JsonDocument root;
+  JsonDocument filter;
+
   filter["stops"][0]["stop_name"] = true;
   filter["stops"][0]["platform_code"] = true;
   filter["departures"][0]["departure_timestamp"]["minutes"] = true;
   filter["departures"][0]["trip"]["headsign"] = true;
-  #ifdef MEGAOLED
-  filter["departures"][0]["trip"]["is_wheelchair_accessible"] = true;
-  filter["departures"][0]["trip"]["is_air_conditioned"] = true; 
-  filter["departures"][0]["trip"]["direction"] = true; 
-  filter["departures"][0]["stop"]["platform_code"] = true;
-  
-  #endif
   filter["departures"][0]["route"]["short_name"] = true;
   filter["infotexts"][0]["text"] = true;
   filter["infotexts"][0]["display_type"] = true;
-  Serial.print("Velikost filtru:");
-  Serial.println(String(filter.size()));
 
+  #ifdef MEGAOLED
+    filter["departures"][0]["trip"]["is_wheelchair_accessible"] = true;
+    filter["departures"][0]["trip"]["is_air_conditioned"] = true; 
+    filter["departures"][0]["trip"]["direction"] = true; 
+    filter["departures"][0]["stop"]["platform_code"] = true;
+  #endif
 
-
-
+  #ifdef DEBUGGING
+    Serial.print("Velikost filtru:");
+    Serial.println(String(filter.size()));
+  #endif
 
   DeserializationError error = deserializeJson(root, httpResult, DeserializationOption::Filter(filter));
 
   // Test if parsing succeeds.
-  if (error) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
-    return;
-  } else {
-    Serial.print("json capacity:");
-// deprecated in ArduinoJson7    Serial.println(root.capacity());
-  }
-
-
-
-  //   clearDisplays();
-
-  // oled.setTextAlignment(TEXT_ALIGN_LEFT);
-
-
-#ifdef USE_LCD
-  int lcdMaxPocetOdjezdu = 7;
-#endif
-
-#ifdef USE_OLED
-  int oledMaxPocetOdjezdu = 5;
-  oled.clearBuffer();
-
-  int cisloRadkuInfo = 5;
-
-  #ifdef MEGAOLED
-    oledMaxPocetOdjezdu = 6;
-  #endif
-#endif
-
-String infotextsRunning="";
-String infotextFullscreen="";
- 
- bool multipleStops=false;
-#ifdef MEGAOLED
-
- int stopCount= root["stops"].size();
-
-
-
- if(stopCount>0)
- {
-  String stopName=root["stops"][0]["stop_name"].as<const char *>();
-  String platform=root["stops"][0]["platform_code"].as<const char *>();
-  if(stopCount>1)
+  if (error) 
   {
-    multipleStops=true;
-    oledVykresliHlavicku("",stopName);
+    #ifdef DEBUGGING
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.f_str());
+    #endif DEBUGGING
+    return;
   }
   else
   {
-    oledVykresliHlavicku(platform,stopName);
+    Serial.print("json capacity:");
   }
- }
 
 
-#endif
+  #ifdef USE_OLED
+    oled.clearBuffer();
+  #endif
+
+  String infotextsRunning="";
+  String infotextFullscreen="";
+ 
+  bool multipleStops=false;
+  
+  #ifdef MEGAOLED
+    int stopCount= root["stops"].size();
+
+    if(stopCount>0)
+    {
+      String stopName=root["stops"][0]["stop_name"].as<const char *>();
+      String platform=root["stops"][0]["platform_code"].as<const char *>();
+      if(stopCount>1)
+      {
+        multipleStops=true;
+        oledVykresliHlavicku("",stopName);
+      }
+      else
+      {
+        oledVykresliHlavicku(platform,stopName);
+      }
+    }
+  #endif
 
 
 
- int arraySizeInfotexts = root["infotexts"].size();
-   Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
+  int arraySizeInfotexts = root["infotexts"].size();
+  Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
  
   for (int i = 0; (i < arraySizeInfotexts); i++) 
   {
@@ -130,7 +104,7 @@ String infotextFullscreen="";
     Serial.println(infotext);
   }
 
- int arraySize = root["departures"].size();
+  int arraySize = root["departures"].size();
   Serial.println("pocet odjezdu:" + String(arraySize));
 
   int counter = 0;
@@ -158,49 +132,40 @@ String infotextFullscreen="";
    
     Serial.println("spoj: " + linka + " " + cil + " "+platformCode+" " + cas);
 
-#ifdef USE_OLED
-    if (counter < oledMaxPocetOdjezdu) 
-    {
-      #ifdef MEGAOLED
-        oledVykresliRadekOdjezduMega(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
-      #else 
-        oledVykresliRadekOdjezdu(linka, cil, cas, counter);
-      #endif
-    }
-#endif
+    #ifdef USE_OLED
+      if (counter < oledMaxPocetOdjezdu) 
+      {
+        #ifdef MEGAOLED
+          oledVykresliRadekOdjezdu(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
+        #else 
+          oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+        #endif
+      }
+    #endif
 
-#ifdef USE_LCD
-    lcdVymazRadekOdjezdu(counter);
-    if (counter < lcdMaxPocetOdjezdu) 
-    {
-      lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
-    }
-    else 
-    {
-     
-    }
-
-
-#endif
-
-    counter++;
+    #ifdef USE_LCD
+      lcdVymazRadekOdjezdu(counter);
+      if (counter < lcdMaxPocetOdjezdu) 
+      {
+        lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
+      }
+      else 
+      {
+      
+      }
+    #endif
+      counter++;
   }
 
-
-
-
-#ifdef USE_LCD
-
-  if(arraySize<lcdMaxPocetOdjezdu)
-  {
-    for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
+  #ifdef USE_LCD
+    if(arraySize<lcdMaxPocetOdjezdu)
     {
-      lcdVymazRadekOdjezdu(j);
+      for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
+      {
+        lcdVymazRadekOdjezdu(j);
+      }
     }
-  }
-#endif
-
-
+  #endif
 
   String casPrikaz = "0:00";
   String den = "";
@@ -212,11 +177,6 @@ String infotextFullscreen="";
   time(&rawtime);
 
   timeinfo = localtime(&rawtime);
-
-
-
-  //timeinfo.hour;
-  // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
 
   char buffer[80];
 
@@ -232,31 +192,23 @@ String infotextFullscreen="";
   strftime(buffer, 80, "%u", timeinfo);
   den = buffer;
 
-
-
-#ifdef USE_LCD
-  lcdVykresliCas();
-#endif
+  #ifdef USE_LCD
+    lcdVykresliCas();
+  #endif
 
   ////////konec casu
 
-#ifdef USE_OLED
-
- if(  infotextGlobalVariable!=infotextsRunning)
-  {
-    infotextOffset=0;
-  }
-  else
-  {
-    infotextOffset++;
-  }
-
-  
- infotextGlobalVariable=infotextsRunning;
-
- oledPeriodicDisplayUpdate();
-
-  //oled.startscrollleft(6,7);
-  oled.sendBuffer();
-#endif
+  #ifdef USE_OLED
+    if(  infotextGlobalVariable!=infotextsRunning)
+    {
+      infotextOffset=0;
+    }
+    else
+    {
+      infotextOffset++;
+    }
+    infotextGlobalVariable=infotextsRunning;
+    oledPeriodicDisplayUpdate();
+    oled.sendBuffer();
+  #endif
 }

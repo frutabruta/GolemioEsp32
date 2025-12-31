@@ -99,6 +99,9 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251231_1817
+    - indentation refactoring
+    - oledSetTextPage rewrite
 - 20251231_1620
     - 128x64 fix
     - making text positions global constants
