@@ -1,85 +1,83 @@
-
-
 #ifdef USE_OLED
+
 #include <U8g2lib.h>
 #include "conversions.h"
-
-
-  #ifdef MEGAOLED
-    #include "ZIS_12_normal.h"
-    #include "ZIS_12_bold.h"
- //   #include "ZIS_17_normal.h"
-    #include "ZIS_17_bold.h"
-    
-static const unsigned char CIRCLE_XBM[] U8X8_PROGMEM = {
-  0x00, 0x00, 0x00,
-  0x00, 0xF0, 0x03,
-  0x00, 0xFC, 0x0F,
-  0x00, 0xFE, 0x1F,
-  0x00, 0xFF, 0x3F,
-  0x80, 0xFF, 0x7F,
-  0x80, 0xFF, 0x7F,
-  0xC0, 0xFF, 0xFF,
-  0xC0, 0xFF, 0xFF,
-  0xC0, 0xFF, 0xFF,
-  0xC0, 0xFF, 0xFF,
-  0xC0, 0xFF, 0xFF,
-  0xC0, 0xFF, 0xFF,
-  0x80, 0xFF, 0x7F,
-  0x80, 0xFF, 0x7F,
-  0x00, 0xFF, 0x3F,
-  0x00, 0xFE, 0x1F,
-  0x00, 0xFC, 0x0F,
-  0x00, 0xF0, 0x03
-};
-
-
-const uint8_t CIRCLE_WIDTH  = 24;
-const uint8_t CIRCLE_HEIGHT = 19;
-
-
-  #else
-    #include "czfonts.h"
-  #endif
-
 
 #ifdef U8X8_HAVE_HW_SPI
   #include <SPI.h>
 #endif
-  #ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
+
+#ifdef U8X8_HAVE_HW_I2C
+  #include <Wire.h>
 #endif
 
+#ifdef MEGAOLED
+  U8G2_SSD1363_256X128_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE, SCL, SDA);
+#else
+  U8G2_SSD1309_128X64_NONAME0_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE ,SCL,SDA);
+#endif
 
-
-
-
-//#define SCREEN_WIDTH 128     // OLED display width, in pixels
-//#define SCREEN_HEIGHT 64     // OLED display height, in pixels
-//#define OLED_RESET -1        // Reset pin # (or -1 if sharing Arduino reset pin)
-//#define SCREEN_ADDRESS 0x3C  ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-//Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
+#ifdef MEGAOLED
+  #include "ZIS_12_normal.h"
+  #include "ZIS_12_bold.h"
+  //#include "ZIS_17_normal.h" unused
+  #include "ZIS_17_bold.h"
+  
+  //circle bitmap
+  static const unsigned char CIRCLE_XBM[] U8X8_PROGMEM = {
+    0x00, 0x00, 0x00,
+    0x00, 0xF0, 0x03,
+    0x00, 0xFC, 0x0F,
+    0x00, 0xFE, 0x1F,
+    0x00, 0xFF, 0x3F,
+    0x80, 0xFF, 0x7F,
+    0x80, 0xFF, 0x7F,
+    0xC0, 0xFF, 0xFF,
+    0xC0, 0xFF, 0xFF,
+    0xC0, 0xFF, 0xFF,
+    0xC0, 0xFF, 0xFF,
+    0xC0, 0xFF, 0xFF,
+    0xC0, 0xFF, 0xFF,
+    0x80, 0xFF, 0x7F,
+    0x80, 0xFF, 0x7F,
+    0x00, 0xFF, 0x3F,
+    0x00, 0xFE, 0x1F,
+    0x00, 0xFC, 0x0F,
+    0x00, 0xF0, 0x03
+  };
+  const uint8_t CIRCLE_WIDTH  = 24;
+  const uint8_t CIRCLE_HEIGHT = 19;
+#else
+  #include "czfonts.h"
+#endif
 
 
 
 #ifdef MEGAOLED
-U8G2_SSD1363_256X128_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE, SCL, SDA);
+  const int sloupecCile = 25;
+  //const int sloupecNastupiste = 235;
+  const int sloupecLinky = 23;
+  const int vyskaRadku = 14;
+  const int sloupecCasu = 254;
+  const int pravyOkrajCile = 228;
+  const int offsetRadku=37;
+  const int sloupecVozicku = 26;
+  const int sloupecVlocky = 39;
+  const int sloupecNastupiste = 231;
+  const int sloupecSmeru=220;
+  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;    
 #else
-U8G2_SSD1309_128X64_NONAME0_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE ,SCL,SDA);
+  const int sloupecCile = 25;
+  const int sloupecLinky = 18;
+  const int vyskaRadku = 10;
+  const int sloupecCasu = 128;
+  const int pravyOkrajCile = 100;
+  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
+  const int offsetRadku=10;
 #endif
-//U8G2_SSD1363_256X128_F_2ND_HW_I2C(U8G2_R0, U8X8_PIN_NONE);
 
-
-
-
-
-const int vyska32 = 0;
 
 const int infoStartPosition=98;
-
-
-
 
 
 
@@ -131,7 +129,8 @@ void oledDrawStringFromRight( int x, int y, const String &buf, bool fill, uint8_
   int box_w = w + 2 * pad;                  // text width + padding on both sides
   int box_h = (ascent - descent) + 2 * pad; // ascent - (negative descent) + padding
 
-  if (fill) {
+  if (fill) 
+  {
     // Clear background behind text (draw color 0 = background)
     oled.setDrawColor(0);
     oled.drawBox(box_x, box_y, box_w, box_h);
@@ -146,151 +145,72 @@ void oledDrawStringFromRight( int x, int y, const String &buf, bool fill, uint8_
 
 void oledDrawStringFromLeft(int sloupec, int radek, String obsah) 
 {
-  /*
-  oled.setCursor(sloupec, radek);
-  oled.println(obsah);
-  */
-
   oled.drawUTF8(sloupec,radek, obsah.c_str());
 }
 
 void oledVykresliHlavicku(String nastupiste, String nazev)
 {
   #ifdef MEGAOLED
-  if(nastupiste!="")
-  {
-  oled.setFont(ZIS_17_bold);  
-  oled.drawLine(0, 20, 255, 20);
-  oledDrawStringFromLeft(53, 16, nazev);
-
-  oled.setDrawColor(1); 
-  oled.drawXBM(0, 0, CIRCLE_WIDTH, CIRCLE_HEIGHT, CIRCLE_XBM);
-  oled.setDrawColor(0); 
-  oledDrawStringFromLeft(12, 16, nastupiste);
-  oled.setDrawColor(1); 
-  }
-  else
-  {
-  oled.setFont(ZIS_17_bold);  
-  oled.drawLine(0, 20, 255, 20);
-  oledDrawStringFromLeft(3, 16, nazev);
-  }
+    if(nastupiste!="")
+    {
+      oled.setFont(ZIS_17_bold);  
+      oled.drawLine(0, 20, 255, 20);
+      oledDrawStringFromLeft(53, 16, nazev);
+      oled.setDrawColor(1); 
+      oled.drawXBM(0, 0, CIRCLE_WIDTH, CIRCLE_HEIGHT, CIRCLE_XBM);
+      oled.setDrawColor(0); 
+      oledDrawStringFromLeft(12, 16, nastupiste);
+      oled.setDrawColor(1); 
+    }
+    else
+    {
+      oled.setFont(ZIS_17_bold);  
+      oled.drawLine(0, 20, 255, 20);
+      oledDrawStringFromLeft(3, 16, nazev);
+    }
   #endif
 }
 
-void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, String platform="") 
-{
-  #ifdef MEGAOLED
-  const int sloupecCile = 25;
-  const int sloupecNastupiste = 235;
-  const int sloupecLinky = 3;
-  const int vyskaRadku = 14;
-  const int sloupecCasu = 252;
-  const int pravyOkrajCile = 228;
-  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  const int offsetRadku=37;
- 
-  oled.setFont(ZIS_12_bold);
-  #else
-  const int sloupecCile = 25;
-  const int sloupecLinky = 0;
-  const int vyskaRadku = 10;
-  const int sloupecCasu = 125;
-  const int pravyOkrajCile = 100;
-  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  const int offsetRadku=10;
-  #endif
-
-  oledDrawStringFromLeft(sloupecLinky, radek * vyskaRadku+offsetRadku, linka);
-  #ifdef BIGOLED
- // oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradDiakritiku(cil).substring(0, 17));
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, cil.substring(0, 30));
-
-    #ifdef MEGAOLED
-      if(platform!="")
-      {
-        oledDrawStringFromLeft(sloupecNastupiste, radek * vyskaRadku+offsetRadku, platform);
-      }
-      
-     
-      
-    #endif
-
-  #else  
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
-  #endif
-
-/*
-  if(cas.length()<2)
+#ifdef MEGAOLED
+  void oledVykresliRadekOdjezduMega(String linka, String cil, String cas, int radek, bool accessible, bool airConditioned, String platform="", String direction="") 
   {
-    cas=" "+cas;
-  }
-  */
-  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);
-  
-}
+    const int sloupecCile = 53;
+    oled.setFont(ZIS_12_bold);
+    oledDrawStringFromRight(sloupecLinky, radek * vyskaRadku+offsetRadku, linka,false);
 
-void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek, bool accessible, bool airConditioned, String platform="", String direction="") 
-{
-  #ifdef MEGAOLED
-  const int sloupecCile = 53;
-  const int sloupecLinky = 23;
-  const int sloupecVozicku = 26;
-  const int sloupecVlocky = 39;
-  const int sloupecNastupiste = 231;
-  const int sloupecSmeru=220;
-  const int vyskaRadku = 14;
-  const int sloupecCasu = 254;
-  const int pravyOkrajCile = 228;
-  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  const int offsetRadku=37;
-  oled.setFont(ZIS_12_bold);
-  oledDrawStringFromRight(sloupecLinky, radek * vyskaRadku+offsetRadku, linka,false);
+    if(accessible)
+    {
+      oledDrawStringFromLeft(sloupecVozicku, radek * vyskaRadku+offsetRadku, "♿");
+    }
 
-  if(accessible)
-  {
-    oledDrawStringFromLeft(sloupecVozicku, radek * vyskaRadku+offsetRadku, "♿");
+    if(airConditioned)
+    {
+      oledDrawStringFromLeft(sloupecVlocky, radek * vyskaRadku+offsetRadku, "❄");
+    }
+
+    if(platform!="")
+    {
+      oledDrawStringFromRight(sloupecNastupiste, radek * vyskaRadku+offsetRadku, platform, true);
+    }
+    
+    if(!direction.isEmpty())
+    {
+      oledDrawStringFromLeft(sloupecSmeru,radek * vyskaRadku+offsetRadku,dirToArrow(direction));
+    }
+    
+    oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, cil.substring(0, 23));
+    oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);  
   }
 
-  if(airConditioned)
+#else
+  void oledVykresliRadekOdjezdu(String linka, String cil, String cas, int radek) 
   {
-    oledDrawStringFromLeft(sloupecVlocky, radek * vyskaRadku+offsetRadku, "❄");
+    oled.setFont(czfont9);
+    oledDrawStringFromRight(sloupecLinky, radek * vyskaRadku+offsetRadku, linka,true);
+    oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, cil.substring(0, 30));
+    oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);  
   }
-
-  if(platform!="")
-  {
-    oledDrawStringFromRight(sloupecNastupiste, radek * vyskaRadku+offsetRadku, platform, true);
-  }
-  
-  if(!direction.isEmpty())
-  {
-    oledDrawStringFromLeft(sloupecSmeru,radek * vyskaRadku+offsetRadku,dirToArrow(direction));
-  }
-  
-  
-
-
-  #else
-  const int sloupecCile = 25;
-  const int sloupecLinky = 0;
-  const int vyskaRadku = 10;
-  const int sloupecCasu = 128;
-  const int pravyOkrajCile = 100;
-  const int maxSirkaTextu = sloupecCile - pravyOkrajCile;
-  const int offsetRadku=10;
-  oledDrawStringFromLeft(sloupecLinky, radek * vyskaRadku+offsetRadku, linka);
-  #endif
-
-  
-  #ifdef BIGOLED
- // oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku, nahradDiakritiku(cil).substring(0, 17));
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, cil.substring(0, 23));
-  #else  
-  oledDrawStringFromLeft(sloupecCile, radek * vyskaRadku+offsetRadku, nahradISO8859(cil).substring(0, 23));
-  #endif
-
-  oledDrawStringFromRight(sloupecCasu, radek * vyskaRadku+offsetRadku, cas, true);  
-}
+#endif
 
 void oledVykresliSpodniRadekDatum(String &cas, String den, int radek, bool vykresliDvojtecku=true) 
 {
@@ -384,29 +304,14 @@ void oledVykresliSpodniRadekInfotext(String &cas, String infotext,int &infotextO
 
 void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int radek) 
 {
-
   int vyskaRadku = 10;
   int sloupecCas = 128;
   int posunPc = 0;
   int posunNc = 0;
   int posun = 3;
-
   int y0 = 64 - vyskaRadku - posun;
-  if (vyska32 == 1) {
-    posun = 1;
-    y0 = 32 - vyskaRadku - posun + 1;
-  }
 
-
-
-
-  // oled.setTextAlignment(TEXT_ALIGN_LEFT);
- // oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
-
- oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
-
-
-  // oled.setTextAlignment(TEXT_ALIGN_RIGHT);
+  oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
   oled.drawLine(0, 50, 127, 50);
 }
@@ -414,34 +319,26 @@ void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int 
 
 void oledSetTextPage(String line1, String line2, String line3, String line4)
 {
-    oled.clearBuffer();
+  oled.clearBuffer();
   oledDrawStringFromLeft(0, 10, line1);
   oledDrawStringFromLeft(0, 20, line2);
   oledDrawStringFromLeft(0, 30, line3);
   oledDrawStringFromLeft(0, 40, line4);
-    oled.sendBuffer();
+  oled.sendBuffer();
 }
 
 void oledPeriodicDisplayUpdate()
 {
-   String casPrikaz = "0:00";
+  String casPrikaz = "0:00";
   String den = "";
 
-  //////// cas
-
+  // time
   time_t rawtime;
   struct tm *timeinfo;
   time(&rawtime);
-
   timeinfo = localtime(&rawtime);
 
-
-
-  //timeinfo.hour;
-  // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
-
   char buffer[80];
-
   char bufferDatum[80];
   char bufferCas[80];
   char bufferMinuty[80];
@@ -457,70 +354,48 @@ void oledPeriodicDisplayUpdate()
 
   if(timeinfo->tm_sec%2==0)
   {
-    displayColon=true;
-   // casPrikaz=String(bufferHodiny)+" "+String(bufferMinuty);    
+    displayColon=true;  
   }
   else
   {
     displayColon=false;
-     // casPrikaz=String(bufferHodiny)+":"+String(bufferMinuty);
   }
 
   #ifdef MEGAOLED
-  casPrikaz=String(bufferHodiny)+"   "+String(bufferMinuty); 
+    casPrikaz=String(bufferHodiny)+"   "+String(bufferMinuty); 
   #else
-  casPrikaz=String(bufferHodiny)+"  "+String(bufferMinuty); 
+    casPrikaz=String(bufferHodiny)+"  "+String(bufferMinuty); 
   #endif 
 
-/*
-
-const char* sep = (timeinfo->tm_sec % 2 == 0) ? ":" : "\xE2\x80\x89";
-
-// Compose the final string
-
-char hh[3], mm[3];
-strftime(hh, sizeof(hh), "%H", timeinfo);
-strftime(mm, sizeof(mm), "%M", timeinfo);
-
-snprintf(bufferCas, sizeof(bufferCas), "%s%s%s", hh, sep, mm);
-casPrikaz=bufferCas;
-*/
   int minutOdRana = 0;
-
   strftime(buffer, 80, "%u", timeinfo);
-  den = buffer;
-  
-    int cisloRadkuInfo = 5;
+  den = buffer;  
+  int cisloRadkuInfo = 5;
 
 //xxxx
 
 
 //infotextGlobalVariable="Příliš žluťoučký kůň úpěl ďábelské ódy.";
 
- if(infotextGlobalVariable=="")
- {
-  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo,displayColon);
- }
- else
- {
-  oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo, displayColon);
-  infotextOffset++;
-  int textWidth=oled.getStrWidth(infotextGlobalVariable.c_str());
-  
-  if(infotextOffset>textWidth)
+  if(infotextGlobalVariable=="")
   {
-    infotextOffset=-infoStartPosition;
+    oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo,displayColon);
   }
- }
+  else
+  {
+    oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo, displayColon);
+    infotextOffset++;
+    int textWidth=oled.getStrWidth(infotextGlobalVariable.c_str());
 
-
-  
-
-
+    if(infotextOffset>textWidth)
+    {
+      infotextOffset=-infoStartPosition;
+    }
+  }
   oled.sendBuffer();
 }
 
-#endif
+#endif //end of OLED
 
 
 

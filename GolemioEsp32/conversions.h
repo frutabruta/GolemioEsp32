@@ -1,3 +1,4 @@
+/* used for different library
 String nahradISO8859(String vstup) 
 {
   vstup.replace("á", "\xE1");  //c hacek
@@ -35,7 +36,7 @@ String nahradISO8859(String vstup)
 
   return vstup;
 }
-
+*/
 String nahradDiakritiku(String vstup) 
 {
   vstup.replace("á", "a");  //c hacek

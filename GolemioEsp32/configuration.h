@@ -27,11 +27,12 @@
 
 //uncomment to use 128x64 I2C OLED on address 0x3C with SSD1306 driver
 #define USE_OLED 1
-// uncomment if using SSD1309 2.42" from LaskaKit to replace Czech characters
+
+// not used, will configure oled driver type
 #define BIGOLED 1  
 
 //also uncomment so use 256x128 with SSD1363 driver
-#define MEGAOLED 1
+//#define MEGAOLED 1
 
 //uncomment to use 20x4 I2C LCD on address 0x3F
 //#define USE_LCD 1

@@ -75,10 +75,6 @@ DeserializationError error = deserializeJson(root, http.getStream(), Deserializa
   oled.clearBuffer();
 
   int cisloRadkuInfo = 5;
-  if (vyska32 == 1) {
-    oledMaxPocetOdjezdu = 2;
-    cisloRadkuInfo = 2;
-  }
 
   #ifdef MEGAOLED
     oledMaxPocetOdjezdu = 6;
@@ -165,7 +161,11 @@ String infotextFullscreen="";
 #ifdef USE_OLED
     if (counter < oledMaxPocetOdjezdu) 
     {
-      oledVykresliRadekOdjezdu(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
+      #ifdef MEGAOLED
+        oledVykresliRadekOdjezduMega(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
+      #else 
+        oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+      #endif
     }
 #endif
 

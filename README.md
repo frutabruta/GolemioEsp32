@@ -99,9 +99,16 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20251231_1620
+    - 128x64 fix
+    - making text positions global constants
+    - oled refactoring
+        - removal of non-u8g2 code
+        - splitting ov vykresliRadek and vykresliRadekMega
+
 - 20251231_1402
     - moved BIGOLED definition to fix date on 256x128
-    
+
 - 20251231_1322
     - 256x128
         - added arrows to fonts
