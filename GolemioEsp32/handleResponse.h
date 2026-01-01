@@ -1,3 +1,5 @@
+
+
 void handleResponse(HTTPClient &http) 
 {
   #ifdef DEBUGGING
@@ -46,7 +48,7 @@ void handleResponse(HTTPClient &http)
     #ifdef DEBUGGING
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.f_str());
-    #endif DEBUGGING
+    #endif
     return;
   }
   else
@@ -83,7 +85,7 @@ void handleResponse(HTTPClient &http)
     }
   #endif
 
-
+  
 
   int arraySizeInfotexts = root["infotexts"].size();
   Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
@@ -108,6 +110,7 @@ void handleResponse(HTTPClient &http)
   Serial.println("pocet odjezdu:" + String(arraySize));
 
   int counter = 0;
+  widestDepartureLength = 0;
 
  // infotextFullscreen="Příliš žluťoučký kůň úpěl ďábelské ódy.";
 
@@ -117,38 +120,59 @@ void handleResponse(HTTPClient &http)
 
  // infotextFullscreen=splitText(infotextFullscreen);
 
+  usedDepartures=0;
+
   if(infotextFullscreen=="")
   {
     for (int i = 0; (i < arraySize); i++) 
     {
       Serial.println("pruchod " + String(i));
       Serial.println("pocetElementu " + String(root[0][i].size()));
-      String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
-      String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
-      String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
-      String platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
-      String direction = root["departures"][i]["trip"]["direction"].as<const char *>();
-      bool isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
-      bool isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
+      Departure departure;
 
+   
+
+      departure.cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
+      departure.linka = root["departures"][i]["route"]["short_name"].as<const char *>();
+      departure.cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
+      departure.platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
+      departure.direction = root["departures"][i]["trip"]["direction"].as<const char *>();
+      departure.isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
+      departure.isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
+
+/*
+      // xxxx
+      if(i==3)
+      {
+        departure.cil = "Brandýs n.L.-St.Bol.,Aut.st";
+      }
+*/
       if(!multipleStops)
       {
-        platformCode="";
+        departure.platformCode="";
       }
       else
       {
-        direction="";
+        departure.direction="";
       }
     
-      Serial.println("spoj: " + linka + " " + cil + " "+platformCode+" " + cas);
+      Serial.println("spoj: " + departure.linka + " " + departure.cil + " "+departure.platformCode+" " + departure.cas);
 
       #ifdef USE_OLED
         if (counter < oledMaxPocetOdjezdu) 
         {
+            departureArray[counter]=departure;
+            usedDepartures++;
+
           #ifdef MEGAOLED
-            oledVykresliRadekOdjezduMega(linka, cil, cas, counter,isAccessible,isAirConditioned,platformCode,  direction);
+            oledVykresliRadekOdjezduMega(departure, counter); //departure.linka, departure.cil, departure.cas, counter, departure.isAccessible, departure.isAirConditioned, departure.platformCode, departure.direction);
           #else 
-            oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+            uint16_t destinationWidth = oledVykresliRadekOdjezdu(departure, counter);
+            if(destinationWidth>widestDepartureLength)
+            {
+              widestDepartureLength=destinationWidth;
+            }
+            
           #endif
         }
       #endif
@@ -157,7 +181,7 @@ void handleResponse(HTTPClient &http)
         lcdVymazRadekOdjezdu(counter);
         if (counter < lcdMaxPocetOdjezdu) 
         {
-          lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
+          lcdVykresliRadekOdjezdu(departure.linka, departure.cil, departure.cas, counter);
         }
         else 
         {
@@ -204,7 +228,7 @@ void handleResponse(HTTPClient &http)
   strftime(bufferDatum, 80, "%d.%m.%Y", timeinfo);
   strftime(bufferCas, 80, "%R", timeinfo);
 
-  int minutOdRana = 0;
+  //int minutOdRana = 0;
   casPrikaz = bufferCas;
   strftime(buffer, 80, "%u", timeinfo);
   den = buffer;

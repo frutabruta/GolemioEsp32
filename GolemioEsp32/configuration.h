@@ -32,7 +32,7 @@
 #define BIGOLED 1  
 
 //also uncomment so use 256x128 with SSD1363 driver
-#define MEGAOLED 1
+//#define MEGAOLED 1
 
 //uncomment to use 20x4 I2C LCD on address 0x3F
 //#define USE_LCD 1

@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20251231_2259";
+String version="20260101_1558";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -139,6 +139,26 @@ ArduinoJson Benoit Blanchon
 
 
 String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
+
+
+
+typedef struct
+{
+     String cas =  "";
+      String linka = "";
+      String cil = "";
+      String platformCode = "";
+      String direction = "";
+      bool isAccessible = false;
+      bool isAirConditioned = false;
+}Departure;
+
+Departure departureArray[10];
+int usedDepartures=0;
+int widestDepartureLength=0;
+bool scrollWait=true;
+int scrollWaitCounter=0;
+const int scrollWaitCycles=50;
 
 int infotextOffset=0;
 String infotextGlobalVariable="";

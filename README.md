@@ -99,9 +99,20 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260101_1558
+    - oled
+        - moved some constants from function to top
+        -  oledVykresliRadekOdjezdu, oledVykresliRadekOdjezduMega
+            - atributes changed to Departure struct
+        - oledPeriodicDisplayUpdate
+            - added handling of long destination names for 128x64
+    - handleResponse
+        - moved to destination array struct
+        - longest destination measurement
 - 20251231_225
     - added handling of general infotexts
         - new function oledSetGlobalInfotext
+    - Minimal SPIFFS partition might be needed from this version even for 128x64 display
 
 - 20251231_1817
     - indentation refactoring
