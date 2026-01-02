@@ -252,7 +252,7 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek, bool vykre
     oledDrawStringFromRight(sloupecCas-13, spodniRadekYoffset,colon, false);   
   }
   #else
-  const int vyskaRadku = 10;
+  //const int vyskaRadku = 10;
   oled.setDrawColor(0);
   oled.drawBox(0, spodniRadekYoffset-11, 128, 12); //FIX!!!
   oled.setDrawColor(1);
@@ -299,7 +299,7 @@ void oledVykresliSpodniRadekInfotext(String &cas, String infotext,int &infotextO
     oledDrawStringFromRight(sloupecCas-14, spodniRadekYoffset,colon, false);   
   }
   #else
-  const int vyskaRadku = 10;
+  //const int vyskaRadku = 10;
   const int sloupecCas = 128;  
   oled.setDrawColor(0);
   oled.drawBox(0, 50, 128, 15);
@@ -321,10 +321,7 @@ void oledVykresliSpodniRadek(String &cas, int aktStranka, int pocetStranek, int 
 {
   int vyskaRadku = 10;
   int sloupecCas = 128;
-  //int posunPc = 0;
-  //int posunNc = 0;
   int posun = 3;
-  //int y0 = 64 - vyskaRadku - posun;
 
   oledDrawStringFromLeft(0, radek * vyskaRadku + posun, String(aktStranka) + "/" + String(pocetStranek));
   oledDrawStringFromRight(sloupecCas, radek * vyskaRadku + posun, cas, false);
@@ -518,7 +515,7 @@ void oledPeriodicDisplayUpdate()
   oled.sendBuffer();
 }
 
-
+#ifndef MEMSAVE
 
 void oledSetGlobalInfotext(String infotextFullscreen)
 {
@@ -610,7 +607,7 @@ void oledSetGlobalInfotext(String infotextFullscreen)
   //return output;
 
 }
-
+#endif
 
 
 #endif //end of OLED

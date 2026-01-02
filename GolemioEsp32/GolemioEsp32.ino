@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20260101_1558";
+String version="20260102_2010";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -138,8 +138,20 @@ ArduinoJson Benoit Blanchon
 #include <ArduinoJson.h>
 
 
-String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
+static const char* const poleDnu[8] = {
+  "",         // 0 (unused)
+  "pondělí",  // 1
+  "úterý",    // 2
+  "středa",   // 3
+  "čtvrtek",  // 4
+  "pátek",    // 5
+  "sobota",   // 6
+  "neděle"    // 7
+};
 
+/*
+String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
+*/
 
 
 typedef struct

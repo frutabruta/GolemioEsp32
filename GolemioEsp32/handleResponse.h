@@ -1,5 +1,3 @@
-
-
 void handleResponse(HTTPClient &http) 
 {
   #ifdef DEBUGGING
@@ -112,13 +110,8 @@ void handleResponse(HTTPClient &http)
   int counter = 0;
   widestDepartureLength = 0;
 
- // infotextFullscreen="Příliš žluťoučký kůň úpěl ďábelské ódy.";
-
-
 //  infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
-//  infotextFullscreen+=infotextFullscreen;
 
- // infotextFullscreen=splitText(infotextFullscreen);
 
   usedDepartures=0;
 
@@ -182,11 +175,7 @@ void handleResponse(HTTPClient &http)
         if (counter < lcdMaxPocetOdjezdu) 
         {
           lcdVykresliRadekOdjezdu(departure.linka, departure.cil, departure.cas, counter);
-        }
-        else 
-        {
-        
-        }
+        }   
       #endif
         counter++;
     }
@@ -203,7 +192,9 @@ void handleResponse(HTTPClient &http)
   }
   else
   {
+    #ifndef MEMSAVE
     oledSetGlobalInfotext(infotextFullscreen);
+    #endif
   }
 
  

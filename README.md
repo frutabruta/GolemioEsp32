@@ -99,6 +99,9 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260102_2010
+    - added MEMSAVE config option to disable global infotexts and allow using standard partitioning scheme
+
 - 20260101_1558
     - oled
         - moved some constants from function to top
@@ -109,6 +112,7 @@ https://stncrn.github.io/u8g2-unifont-helper/
     - handleResponse
         - moved to destination array struct
         - longest destination measurement
+        
 - 20251231_225
     - added handling of general infotexts
         - new function oledSetGlobalInfotext

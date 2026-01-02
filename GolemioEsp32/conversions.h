@@ -37,6 +37,7 @@ String nahradISO8859(String vstup)
   return vstup;
 }
 */
+/*
 String nahradDiakritiku(String vstup) 
 {
   vstup.replace("á", "a");  //c hacek
@@ -75,38 +76,32 @@ String nahradDiakritiku(String vstup)
   return vstup;
 }
 
+*/
 
-
-String dirToArrow(const String& s) {
-  if      (s == "top")          return "↑"; // \xE2\x86\x91
-  else if (s == "top-right")    return "↗"; // \xE2\x86\x97
-  else if (s == "right")        return "→"; // \xE2\x86\x92
-  else if (s == "bottom-right") return "↘"; // \xE2\x86\x98
-  else if (s == "bottom")       return "↓"; // \xE2\x86\x93
-  else if (s == "bottom-left")  return "↙"; // \xE2\x86\x99
-  else if (s == "left")         return "←"; // \xE2\x86\x90
-  else if (s == "top-left")     return "↖"; // \xE2\x86\x96
-  return "?";
-}
+#ifdef MEGAOLED
+  String dirToArrow(const String& s) {
+    if      (s == "top")          return "↑"; // \xE2\x86\x91
+    else if (s == "top-right")    return "↗"; // \xE2\x86\x97
+    else if (s == "right")        return "→"; // \xE2\x86\x92
+    else if (s == "bottom-right") return "↘"; // \xE2\x86\x98
+    else if (s == "bottom")       return "↓"; // \xE2\x86\x93
+    else if (s == "bottom-left")  return "↙"; // \xE2\x86\x99
+    else if (s == "left")         return "←"; // \xE2\x86\x90
+    else if (s == "top-left")     return "↖"; // \xE2\x86\x96
+    return "?";
+  }
+#endif
 
 
 String  cisloDoDne(int vstup) 
 {
   String vystup = "";
 
-
   if ((vstup < 0) || (vstup > 7)) {
     return "";
   }
 
-  #ifdef BIGOLED
- // vystup= nahradDiakritiku(poleDnu[vstup]);
- vystup=poleDnu[vstup];
-  #else
-  vystup= nahradISO8859(poleDnu[vstup]);
-  #endif
-
-
+  vystup=poleDnu[vstup];
   return vystup;
 }
 
