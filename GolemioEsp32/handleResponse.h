@@ -99,7 +99,12 @@ void handleResponse(HTTPClient &http)
     }
     else if (infotextType=="general")
     {
+      #ifdef MEMSAVE
+      infotextsRunning+=infotext;
+      #else
       infotextFullscreen=infotext;
+      #endif
+
     }
     Serial.println(infotext);
   }
@@ -111,6 +116,7 @@ void handleResponse(HTTPClient &http)
   widestDepartureLength = 0;
 
 //  infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
+ // infotextsRunning="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
 
 
   usedDepartures=0;
@@ -204,6 +210,7 @@ void handleResponse(HTTPClient &http)
 
   //////// cas
 
+/*
   time_t rawtime;
   struct tm *timeinfo;
   time(&rawtime);
@@ -223,7 +230,7 @@ void handleResponse(HTTPClient &http)
   casPrikaz = bufferCas;
   strftime(buffer, 80, "%u", timeinfo);
   den = buffer;
-
+*/
   #ifdef USE_LCD
     lcdVykresliCas();
   #endif

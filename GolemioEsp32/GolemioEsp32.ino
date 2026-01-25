@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20260102_2010";
+String version="20260125_1655";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -121,7 +121,7 @@ https://github.com/tobozo/ESP32-targz
 /*
 ArduinoJson Benoit Blanchon
 7.1.0f
-
+7.2.0
 */
 
 
@@ -206,8 +206,14 @@ String infotextGlobalVariable="";
 //default attributes
 String klic = "xxx";
 String parametry = "?aswIds=511_2&minutesBefore=1&minutesAfter=60&limit=5&mode=departures&order=real";
-String zakladAdresy = "https://api.golemio.cz/v2/pid/departureboards";  //public API
-String celaAdresa = "";                                                    //public API
+
+#ifdef RABIN
+String zakladAdresy = "https://rabin.golemio.cz/v2/pid/departureboards";  //development API
+#else
+String zakladAdresy = "https://api.golemio.cz/v2/pid/departureboards";  //production API
+#endif
+
+String celaAdresa = "";                                             
 
 WiFiManagerParameter paramApiKey("golemioApiKey", "golemioApiKeyText", klic.c_str(), 350);
 WiFiManagerParameter paramParameters("golemioParameters", "golemioParametersText",  parametry.c_str(), 200);
@@ -414,7 +420,8 @@ void setupDisplay()
 {
   Serial.println("setupDisplay");
   Wire.begin(SDA, SCL);
-  Wire.setClock(100000);   
+  //Wire.setClock(1000000);   
+  Wire.setClock(400000);   
 
   #ifdef USE_OLED
     oled.setI2CAddress(0x3C * 2);
@@ -676,10 +683,14 @@ void saveSpiffs()
     }
 
     #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
+      #ifdef DEBUGGING
       serializeJson(json, Serial);
+      #endif
       serializeJson(json, configFile);
     #else
+      #ifdef DEBUGGING
       json.printTo(Serial);
+      #endif
       json.printTo(configFile);
     #endif
     configFile.close();

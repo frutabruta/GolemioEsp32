@@ -245,11 +245,11 @@ void oledVykresliSpodniRadekDatum(String &cas, String den, int radek, bool vykre
   oled.drawBox(0, spodniRadekYoffset-11, 256, 15);
   oled.setDrawColor(1);
   oledDrawStringFromLeft(0, spodniRadekYoffset, den);
-  oledDrawStringFromRight(sloupecCas, spodniRadekYoffset, cas, false);   
+  oledDrawStringFromRight(sloupecHodiny, spodniRadekYoffset, cas, false);   
   if(vykresliDvojtecku)
   {
     String colon=":";
-    oledDrawStringFromRight(sloupecCas-13, spodniRadekYoffset,colon, false);   
+    oledDrawStringFromRight(sloupecHodiny-13, spodniRadekYoffset,colon, false);   
   }
   #else
   //const int vyskaRadku = 10;
@@ -350,6 +350,7 @@ void oledSetTextPage(String line1, String line2="", String line3="", String line
 
   oled.sendBuffer();
 }
+
 void oledSetTextPageRaw(String line1, String line2="", String line3="", String line4="",String line5="",String line6="")
 {
   #ifdef MEGAOLED 
@@ -376,6 +377,11 @@ void oledSetGlobalInfotext(String input)
 
 void oledPeriodicDisplayUpdate()
 {
+  if(usedDepartures>0)
+  {
+      oled.clearBuffer();
+  }
+
 
   for(int i=0;i<usedDepartures;i++)
   {
@@ -505,6 +511,7 @@ void oledPeriodicDisplayUpdate()
   {
     oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo, displayColon);
     infotextOffset++;
+   // infotextOffset++;
     int textWidth=oled.getStrWidth(infotextGlobalVariable.c_str());
 
     if(infotextOffset>textWidth)
@@ -512,7 +519,16 @@ void oledPeriodicDisplayUpdate()
       infotextOffset=-infoStartPosition;
     }
   }
+  #ifdef MEGAOLED
+    //update running line in two halves
+    oled.updateDisplayArea(/*x_tile=*/0, /*y_tile=*/14, /*w_tiles=*/16, /*h_tiles=*/2);
+    oled.updateDisplayArea(/*x_tile=*/15, /*y_tile=*/14, /*w_tiles=*/16, /*h_tiles=*/2);
+  #else
+
   oled.sendBuffer();
+  
+  #endif
+
 }
 
 #ifndef MEMSAVE

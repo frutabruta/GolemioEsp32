@@ -19,8 +19,13 @@
 //#define MHET 1
 
 //#define CUSTOM 1 //Do-IT ESP32 with LCD display
+
 //uncomment to enable debug messages
 //#define DEBUGGING 1
+
+//uncoment to use development Golemio server
+//#define RABIN 1
+
 
 
 //DISPLAY SETUP SECTION
@@ -33,6 +38,7 @@
 
 //disable features to fit into DEfault 4MB with SPIFFS scheme
 #define MEMSAVE 1
+
 
 //also uncomment so use 256x128 with SSD1363 driver
 //#define MEGAOLED 1

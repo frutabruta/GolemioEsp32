@@ -99,6 +99,14 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260125_1655
+    - new configuration optin RABIN to allow to use development server (requires development API key)
+    - handleResponse
+        - fixed storing global infotext as running when MEMSAVE is active
+    - oled 
+        - oledPeriodicDisplayUpdate
+            - added clearBuffer when departures are present to fix errors not vanishing
+            
 - 20260102_2010
     - added MEMSAVE config option to disable global infotexts and allow using standard partitioning scheme
 
