@@ -8,6 +8,9 @@ Should be possible to use generic ESP32 S2 and ESP32 C3 board respectively.
 
 [<img src="images/oledespwled.jpg" width="300px"/>](images/oledespwled.jpg?raw=true "128x64 OLED screen")
 
+[<img src="images/oled256x128.jpg" width="300px"/>](images/oled256x128.jpg?raw=true "256x128 OLED screen")
+
+
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
 ## Required libraries
 
@@ -43,7 +46,9 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
 - select display
     - to use 20x4 LCD uncomment ```#define USE_LCD 1```
     - to use 128x64 OLED uncomment ```#define USE_OLED 1```
-
+- Tools -> Board : select correct ESP32 version
+    - ESP32 C3 Dev module for Laskakit ESPwled
+- Tools -> Partiotioning scheme -> Minimal SPIFFS
 - upload code
 
 - connect to WI-FI hotspot created by ESP32 
@@ -69,8 +74,120 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
         - wait for update finished message
 
 
+## Custom BDF font export
+The fonts are based on BDF files provided by [Pražská integrovaná doprava](https://github.com/prazska-integrovana-doprava/fonts).
+To fix number bounding box, -b 1 parameter might be needed.
+
+
+```
+bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_bold.bdf -o ZIS_12_bold.h -n ZIS_12_bold -d ZIS_12_bold.bdf
+bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_12_normal.bdf -o ZIS_12_normal.h -n ZIS_12_normal -d ZIS_12_normal.bdf
+bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_17_normal.bdf -o ZIS_17_normal.h -n ZIS_17_normal -d ZIS_17_normal.bdf
+bdfconv -v -f 1 -b 1 -m "0-127,128-255,256-383,688-767,8201, 9855, 9992, 10052" ZIS_17_bold.bdf -o ZIS_17_bold.h -n ZIS_17_bold -d ZIS_17_bold.bdf
+```
+
+ASCII printable: 32–127
+Latin-1 Supplement: 160–255 (á, é, í, ó, ú, ý)
+Latin Extended-A: 256–383 (ě, ř, č, š, ť, ž, ď, ň, ů)
+Arrows: 8592–8601 (← ↑ → ↓ ↖ ↗ ↘ ↙)
+Extras: thin space (8201), ♿ (9855), ✈ (9992), ✴ (10052)
+
+
+Optimised commands:
+```
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_12_normal.bdf -o ZIS_12_normal.h -n ZIS_12_normal -d ZIS_12_normal.bdf
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_12_bold.bdf   -o ZIS_12_bold.h   -n ZIS_12_bold   -d ZIS_12_bold.bdf
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_17_normal.bdf -o ZIS_17_normal.h -n ZIS_17_normal -d ZIS_17_normal.bdf
+bdfconv -v -f 1 -b 1 -m "32-127,160-255,256-383,8592-8601,8201,9855,9992,10052" ZIS_17_bold.bdf -o ZIS_17_bold.h -n ZIS_17_bold -d ZIS_17_bold.bdf
+```
+https://stncrn.github.io/u8g2-unifont-helper/
+
 
 ## Changelog
+- 20260221_1103
+    - fixed header in periodic update for 256x128
+    - added photo to description
+     
+- 20260125_1655
+    - new configuration optin RABIN to allow to use development server (requires development API key)
+    - handleResponse
+        - fixed storing global infotext as running when MEMSAVE is active
+    - oled 
+        - oledPeriodicDisplayUpdate
+            - added clearBuffer when departures are present to fix errors not vanishing
+            
+- 20260102_2010
+    - added MEMSAVE config option to disable global infotexts and allow using standard partitioning scheme
+
+- 20260101_1558
+    - oled
+        - moved some constants from function to top
+        -  oledVykresliRadekOdjezdu, oledVykresliRadekOdjezduMega
+            - atributes changed to Departure struct
+        - oledPeriodicDisplayUpdate
+            - added handling of long destination names for 128x64
+    - handleResponse
+        - moved to destination array struct
+        - longest destination measurement
+        
+- 20251231_225
+    - added handling of general infotexts
+        - new function oledSetGlobalInfotext
+    - Minimal SPIFFS partition might be needed from this version even for 128x64 display
+
+- 20251231_1817
+    - indentation refactoring
+    - oledSetTextPage rewrite
+
+- 20251231_1620
+    - 128x64 fix
+    - making text positions global constants
+    - oled refactoring
+        - removal of non-u8g2 code
+        - splitting ov vykresliRadek and vykresliRadekMega
+
+- 20251231_1402
+    - moved BIGOLED definition to fix date on 256x128
+
+- 20251231_1322
+    - 256x128
+        - added arrows to fonts
+        - show directions when 1 stop is selected
+    - conversion tables moved to a separate .h file
+
+- 20251230_2226
+    - fixed fonts number 1 width
+        - ZIS_12_bold.h
+        - ZIS_12_normal.h
+- 20251230_1626
+    - 3D files
+        - added long version of display pole
+    - oledVykresliSpodniRadekInfotext
+        - time display fix
+    - oledVykresliSpodniRadekDatum
+        - size fixes
+- 20251223_2246
+    - czfonts
+        - number 1 bounding box fix
+    
+- 20251223_1643
+    - fonts: added narrow space
+    - handleResponse
+        - added wheelchair and air conditioning
+        - added platform
+    - oled.h
+        - added blinking colon
+        - many rewrites
+        - fix of 128x64 part
+
+
+- 20251207_0041
+    - first application of 256x128 layouts
+        - to use uncomment #define MEGAOLED 1
+
+- 20251206_1712
+    - first working version of 256x128
+
 - 20250714_1846
     - version number fix
 - 20250530_2231

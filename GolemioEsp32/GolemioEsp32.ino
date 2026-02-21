@@ -1,8 +1,10 @@
 //tzapu WifiManagerVerion
-//ssd1309
+//ssd1336 256x128 
+
 //u8g2
 
-String version="20250714_1846";
+
+String version="20260221_1103";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -32,7 +34,11 @@ SCL - D1
 LaskaKit ESP32-C3-LPKit
 Set ESP32C3 Dev Module in Arduino IDE
 Enable USB CDC on boot
-use default partition scheme with spiffs
+
+Tested with esp32 package by Espressif Systems v3.0.7
+
+For 256x128 use Minimal SPIFFS partitioning scheme!
+For 128x64 use default 4MB with SPIFFs
 
 Enable Erase all flash before  upload to solve the partition issue
 
@@ -115,7 +121,7 @@ https://github.com/tobozo/ESP32-targz
 /*
 ArduinoJson Benoit Blanchon
 7.1.0f
-
+7.2.0
 */
 
 
@@ -124,7 +130,7 @@ ArduinoJson Benoit Blanchon
 
 #include <FS.h>
 #ifdef ESP32
-#include <SPIFFS.h>
+  #include <SPIFFS.h>
 #endif
 
 
@@ -132,36 +138,70 @@ ArduinoJson Benoit Blanchon
 #include <ArduinoJson.h>
 
 
+static const char* const poleDnu[8] = {
+  "",         // 0 (unused)
+  "pondělí",  // 1
+  "úterý",    // 2
+  "středa",   // 3
+  "čtvrtek",  // 4
+  "pátek",    // 5
+  "sobota",   // 6
+  "neděle"    // 7
+};
+
+/*
 String poleDnu[] = { "", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
+*/
+
+
+typedef struct
+{
+     String cas =  "";
+      String linka = "";
+      String cil = "";
+      String platformCode = "";
+      String direction = "";
+      bool isAccessible = false;
+      bool isAirConditioned = false;
+}Departure;
+
+Departure departureArray[10];
+int usedDepartures=0;
+int widestDepartureLength=0;
+bool scrollWait=true;
+int scrollWaitCounter=0;
+const int scrollWaitCycles=50;
 
 int infotextOffset=0;
 String infotextGlobalVariable="";
 
+bool multipleStops=false;
+String stopName="";
+String platform="";
+int stopCount=0;
+
 ////////////////////////////////////// definice Golemio
 #ifdef ESP32
-#include <SPIFFS.h>
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <HTTPClient.h>
+  #include <SPIFFS.h>
+  #include <WiFi.h>
+  #include <WiFiClientSecure.h>
+  #include <HTTPClient.h>
 #endif
 
 #ifdef ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <WiFiClientSecureBearSSL.h>
+  #include <ESP8266WiFi.h>
+  #include <ESP8266HTTPClient.h>
+  #include <WiFiClientSecureBearSSL.h>
 #endif
-
 
 
 #ifdef USE_LCD
-#include "lcd.h"
+  #include "lcd.h"
 #endif
 
 #ifdef USE_OLED
-#include "oled.h"
+  #include "oled.h"
 #endif
-
-
 
 
 
@@ -170,12 +210,18 @@ String infotextGlobalVariable="";
 
 //default attributes
 String klic = "xxx";
-String parametry = "?cisIds=58791&minutesBefore=1&minutesAfter=60&limit=5&mode=departures&includeMetroTrains=true&order=real";
-String zakladAdresy = "https://api.golemio.cz/v2/pid/departureboards";  //public API
-String celaAdresa = "";                                                    //public API
+String parametry = "?aswIds=511_2&minutesBefore=1&minutesAfter=60&limit=5&mode=departures&order=real";
 
-   WiFiManagerParameter paramApiKey("golemioApiKey", "golemioApiKeyText", klic.c_str(), 350);
-  WiFiManagerParameter paramParameters("golemioParameters", "golemioParametersText",  parametry.c_str(), 200);
+#ifdef RABIN
+String zakladAdresy = "https://rabin.golemio.cz/v2/pid/departureboards";  //development API
+#else
+String zakladAdresy = "https://api.golemio.cz/v2/pid/departureboards";  //production API
+#endif
+
+String celaAdresa = "";                                             
+
+WiFiManagerParameter paramApiKey("golemioApiKey", "golemioApiKeyText", klic.c_str(), 350);
+WiFiManagerParameter paramParameters("golemioParameters", "golemioParametersText",  parametry.c_str(), 200);
 
 
 int sloupecLinka = 0;
@@ -193,8 +239,6 @@ const int spickaDo = 9;
 int pocitacVterin = 30;
 
 
-
-
 String idZastavky = "58791";  //58762 balabenka
 
 String wifiPortalName="GolemioSetup";
@@ -203,60 +247,71 @@ String wifiPortalPassword="password";
 bool filtrNeaktivni = true;
 
 
-
 //////////////// http client
 //https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
 
 
 
-void heartBeatPrint() {
+void heartBeatPrint() 
+{
   static int num = 1;
 
   if (WiFi.status() == WL_CONNECTED)
-    Serial.print("H");  // H means connected to WiFi
-  else {
-    if (false) {
+  {
+    Serial.print("H");  // H means connected to WiFi}
+  }
+  else 
+  {
+    if (false) //fix?
+    {
       Serial.print("C");  // C means in Config Mode
       vypisChybuNaDispleje("config mode");
     }
-
-    else {
+    else 
+    {
       Serial.print("F");  // F means not connected to WiFi
       vypisChybuNaDispleje("wifi not connected");
       WiFi.reconnect();
     }
   }
 
-  if (num == 80) {
+  if (num == 80) 
+  {
     Serial.println();
     num = 1;
-  } else if (num++ % 10 == 0) {
+  } 
+  else if (num++ % 10 == 0) 
+  {
     Serial.print(F(" "));
   }
 }
 
-void check_status() {
+void check_status() 
+{
   static unsigned long checkstatus_timeout = 0;
-
-periodicDisplayUpdate();
+  periodicDisplayUpdate();
 
   //KH
-#define HEARTBEAT_INTERVAL 1000L
+  #define HEARTBEAT_INTERVAL 1000L
+  
   // Print WiFi hearbeat, Publish MQTT Topic every HEARTBEAT_INTERVAL (5) seconds.
-  if ((millis() > checkstatus_timeout) || (checkstatus_timeout == 0)) {
-    if (WiFi.status() == WL_CONNECTED) {
-    
-#ifdef USE_LCD
-      lcdVykresliCas();
-#endif
+  if ((millis() > checkstatus_timeout) || (checkstatus_timeout == 0)) 
+  {
+    if (WiFi.status() == WL_CONNECTED)
+    {    
+      #ifdef USE_LCD
+        lcdVykresliCas();
+      #endif
 
-#ifdef DEBUGGING
-      Serial.println("free heap:");
-      Serial.println(ESP.getFreeHeap());
-      Serial.print("pocet vterin: ");
-      Serial.println(String(pocitacVterin));
-#endif
-      if (pocitacVterin > 10) {
+      #ifdef DEBUGGING
+            Serial.println("free heap:");
+            Serial.println(ESP.getFreeHeap());
+            Serial.print("pocet vterin: ");
+            Serial.println(String(pocitacVterin));
+      #endif
+
+      if (pocitacVterin > 10) 
+      {
         stahni();
         pocitacVterin = 0;
       }
@@ -269,17 +324,21 @@ periodicDisplayUpdate();
 }
 
 
-void checkButton() {
+void checkButton() 
+{
   // check for button press
-  if (digitalRead(TRIGGER_PIN) == LOW) {
+  if (digitalRead(TRIGGER_PIN) == LOW) 
+  {
     // poor mans debounce/press-hold, code not ideal for production
-    delay(50);
-    if (digitalRead(TRIGGER_PIN) == LOW) {
+    delay(50); //fix?
+    if (digitalRead(TRIGGER_PIN) == LOW) 
+    {
       Serial.println("Button Pressed");
       vypisChybuNaDispleje("zmacknuto tlacitko");
       // still holding button for 3000 ms, reset settings, code not ideaa for production
       delay(3000);  // reset delay hold
-      if (digitalRead(TRIGGER_PIN) == LOW) {
+      if (digitalRead(TRIGGER_PIN) == LOW) 
+      {
         Serial.println("Button Held");
         Serial.println("Erasing Config, restarting");
         vypisChybuNaDispleje("mazu konfiguraci");
@@ -292,12 +351,15 @@ void checkButton() {
       vypisChybuNaDispleje("startuju konfiguracni portal");
       setTextPage("starting portal","192.168.4.1",wifiPortalName,wifiPortalPassword);
 
-      if (!wm.startConfigPortal(wifiPortalName.c_str(), wifiPortalPassword.c_str())) {
+      if (!wm.startConfigPortal(wifiPortalName.c_str(), wifiPortalPassword.c_str())) 
+      {
         Serial.println("failed to connect or hit timeout");
         setTextPage("wi-fi ","connection","failed","");
         delay(3000);
         // ESP.restart();
-      } else {
+      } 
+      else 
+      {
         //if you get here you have connected to the WiFi
         Serial.println("connected...yeey :)");
         //vypisChybuNaDispleje("wifi pripojena");
@@ -310,7 +372,8 @@ void checkButton() {
 
 
 
-String timeToString() {
+String timeToString() 
+{
   time_t rawtime;
   struct tm *timeinfo;
   time(&rawtime);
@@ -319,19 +382,20 @@ String timeToString() {
   char bufferCas[20];
   strftime(bufferCas, 20, "%T", timeinfo);
 
-  // Serial.println(String(timeinfo->tm_hour) + ":" + String(timeinfo->tm_min));
-
-
   String jenCas = bufferCas;
   return jenCas;
   // delete timeinfo;
 }
+
+
 ////////////////////////////////////////////////////////// funkce golemio
 
 
-void printLocalTime() {
+void printLocalTime() 
+{
   struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
+  if (!getLocalTime(&timeinfo)) 
+  {
     Serial.println("Failed to obtain time");
     return;
   }
@@ -341,22 +405,18 @@ void printLocalTime() {
 void setTextPage(String line1, String line2, String line3, String line4)
 {
   #ifdef USE_OLED
-   oledSetTextPage(line1,line2,line3,line4);
-#endif
+    oledSetTextPage(line1,line2,line3,line4);
+  #endif
 
-#ifdef USE_LCD
- lcdSetTextPage(line1,line2,line3,line4);
-#endif 
-
+  #ifdef USE_LCD
+    lcdSetTextPage(line1,line2,line3,line4);
+  #endif 
 }
 
-void vypisChybuNaDispleje(String text) {
+void vypisChybuNaDispleje(String text) 
+{
   printLocalTime();
-  //Serial.println(timeToString() );
-
   setTextPage(text,"","","");
-
-
   Serial.println("error: " + text);
 }
 
@@ -364,50 +424,45 @@ void vypisChybuNaDispleje(String text) {
 void setupDisplay()
 {
   Serial.println("setupDisplay");
+  Wire.begin(SDA, SCL);
+  //Wire.setClock(1000000);   
+  Wire.setClock(400000);   
 
-
-    Wire.begin(SDA, SCL);
-
-#ifdef USE_OLED
-  if (!oled.begin()) {
-    Serial.println(F("SSD1306 allocation failed"));
-    /*  for (;;)
+  #ifdef USE_OLED
+    oled.setI2CAddress(0x3C * 2);
+    if (!oled.begin()) 
+    {
+      Serial.println(F("SSD1306 allocation failed"));
+      /*  for (;;)
       ;  // Don't proceed, loop forever */
-  }
-  oled.enableUTF8Print();
-  oled.setFontMode(0);
-  
-  oled.clearBuffer();
-  oled.setFont(czfont9);
-  oled.setFontDirection(0);
-  oled.setCursor(0,9);
-  oled.print("oled init");
-  oled.sendBuffer();
-                // Normal 1:1 pixel scale
- // oled.setTextColor(SSD1306_WHITE);  // Draw white text
-//  oled.cp437(true);
- 
-#endif
+    }
+    oled.enableUTF8Print();
+    oled.setFontMode(0);
+    oled.clearBuffer();
+    oled.setFontDirection(0);
 
+    #ifdef MEGAOLED
+      oled.setFont(ZIS_12_normal);
+    #else
+      oled.setFont(czfont9);
+    #endif
 
-#ifdef USE_LCD
-  lcd.init();
-  lcd.backlight();
-  lcd.clear();
-#endif  
+    setTextPage("oled init","","","");
+  #endif
 
-
-setTextPage("golemio display","version",version,"");
-
+  #ifdef USE_LCD
+    lcd.init();
+    lcd.backlight();
+    lcd.clear();
+  #endif  
+  setTextPage("golemio display","version",version,"");
 }
 
-void setupGolemio() {
+
+void setupGolemio() 
+{
   Serial.println("void setupGolemio()");
-
   Serial.println("SCL:" + String(SCL) + " SDA:" + String(SDA));
-
-  
-
 
   delay(2000);
 
@@ -416,62 +471,65 @@ void setupGolemio() {
   
   Serial.println(parametry);
 
-setTextPage( "parametry: ",parametry,"","");
+  setTextPage( "parametry: ",parametry,"","");
 
   Serial.println(timeToString());
-
   //http.useHTTP10(true);
 }
 
-bool jeSpicka(tm *vstup) {
+bool jeSpicka(tm *vstup) 
+{
   int hodina = vstup->tm_hour;
   int den = vstup->tm_wday;
 
-  if ((hodina >= spickaOd) && (hodina < spickaDo) && (den > 0) && (den < 6)) {
+  if ((hodina >= spickaOd) && (hodina < spickaDo) && (den > 0) && (den < 6)) 
+  {
     return true;
   }
   return false;
 }
 
-void clearDisplays() {
-#ifdef USE_OLED
-  oled.clearBuffer();
-#endif
+void clearDisplays() 
+{
+  #ifdef USE_OLED
+    oled.clearBuffer();
+  #endif
 
-
-#ifdef USE_LCD
-  lcd.clear();
-#endif
+  #ifdef USE_LCD
+    lcd.clear();
+  #endif
 }
 
 
 void periodicDisplayUpdate()
 {
   #ifdef USE_OLED
-  oledPeriodicDisplayUpdate();
-#endif
-
-
-#ifdef USE_LCD
-  lcdPeriodicDisplayUpdate();
-#endif
+    oledPeriodicDisplayUpdate();
+  #endif
+  
+  #ifdef USE_LCD
+    lcdPeriodicDisplayUpdate();
+  #endif
 }
 
 
-void stahni() {
+void stahni() 
+{
 
-  if (WiFi.status() == WL_CONNECTED) {  //Check WiFi connection status
+  if (WiFi.status() == WL_CONNECTED) //Check WiFi connection status
+  {  
+    #ifdef ESP8266
+      std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
+    #endif
 
-#ifdef ESP8266
-    std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
-#endif
-
-#ifdef ESP32
-    NetworkClientSecure *client = new NetworkClientSecure;
-#endif
+    #ifdef ESP32
+      NetworkClientSecure *client = new NetworkClientSecure;
+    #endif
 
     client->setInsecure();
-    if (client) {
+
+    if (client) 
+    {
       HTTPClient http;
       celaAdresa = zakladAdresy+parametry;
       http.setTimeout(60000);
@@ -481,41 +539,45 @@ void stahni() {
       http.addHeader("X-Access-Token", klic);
       http.addHeader(F("Content-Length"), String(0));
 
-#ifdef ESP32
-      http.setAcceptEncoding("identity");
-      // http.setConnectTimeout(1000);
-#endif
+      #ifdef ESP32
+        http.setAcceptEncoding("identity");
+        // http.setConnectTimeout(1000);
+      #endif
 
-#ifdef ESP8266
-      http.addHeader("Accept-Encoding", "identity");  //doesn't work
-#endif
+      #ifdef ESP8266
+        http.addHeader("Accept-Encoding", "identity");  //doesn't work
+      #endif
 
       Serial.println(celaAdresa);
 
-
       int httpCode = http.GET();  //Send the request
 
-      if (httpCode > 0) {
-        switch (httpCode) {
+      if (httpCode > 0) 
+      {
+        switch (httpCode) 
+        {
           case 200:
             handleResponse(http);
             break;
           default:
             vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
-
             break;
         }
 
-      } else {
+      }
+      else
+      {
         vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
       }
 
       http.end();  //Close connection
     }
-#ifdef ESP32
-    delete client;
-#endif
-  } else {
+    #ifdef ESP32
+        delete client;
+    #endif
+  } 
+  else 
+  {
     vypisChybuNaDispleje("wifi nepripojeno");
   }
 
@@ -524,21 +586,18 @@ void stahni() {
 
 
 
-
-
-
-
-
 bool shouldSaveConfig = false;
 
 //callback notifying us of the need to save config
-void saveConfigCallback () {
+void saveConfigCallback () 
+{
   Serial.println("Should save config");
   shouldSaveConfig = true;
   //ESP.restart();
 }
 
-void saveParamsCallback () {
+void saveParamsCallback () 
+{
   Serial.println("Should save params");
   shouldSaveConfig = true;
   klic = paramApiKey.getValue();
@@ -551,20 +610,24 @@ void saveParamsCallback () {
 
 
 
-void setupSpiffs() {
+void setupSpiffs() 
+{
   //clean FS, for testing
   //SPIFFS.format();
 
   //read configuration from FS json
   Serial.println("mounting FS...");
 
-  if (SPIFFS.begin(true)) {
+  if (SPIFFS.begin(true)) 
+  {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
+    if (SPIFFS.exists("/config.json")) 
+    {
       //file exists, reading and loading
       Serial.println("reading config file");
       File configFile = SPIFFS.open("/config.json", "r");
-      if (configFile) {
+      if (configFile) 
+      {
         Serial.println("opened config file");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
@@ -572,62 +635,69 @@ void setupSpiffs() {
 
         configFile.readBytes(buf.get(), size);
 
-#if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-        JsonDocument json;
-        auto deserializeError = deserializeJson(json, buf.get());
-        serializeJson(json, Serial);
-        if (!deserializeError) {
-#else
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(buf.get());
-        json.printTo(Serial);
-        if (json.success()) 
-        {
-#endif
-          Serial.println("\nparsed json");
-          klic = String(json["golemio_api_key"]);
-          parametry = String(json["golemio_parameters"]);
-          
+        #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
+          JsonDocument json;
+          auto deserializeError = deserializeJson(json, buf.get());
+          serializeJson(json, Serial);
+          if (!deserializeError) 
+          {
+        #else
+          DynamicJsonBuffer jsonBuffer;
+          JsonObject& json = jsonBuffer.parseObject(buf.get());
+          json.printTo(Serial);
 
-        } else {
-          Serial.println("failed to load json config");
-        }
-        configFile.close();
+          if (json.success()) 
+          {
+        #endif
+            Serial.println("\nparsed json");
+            klic = String(json["golemio_api_key"]);
+            parametry = String(json["golemio_parameters"]);
+          } 
+          else
+          {
+            Serial.println("failed to load json config");
+          }
+          configFile.close();
       }
     } 
-  } else {
+  } 
+  else
+  {
     Serial.println("failed to mount FS");
   }
 }
 
-void saveSpiffs() {
+void saveSpiffs() 
+{
   //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
-#if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-    JsonDocument json;
-#else
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
-#endif
-
+    #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
+      JsonDocument json;
+    #else
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& json = jsonBuffer.createObject();
+    #endif
 
     json["golemio_api_key"] = klic;
     json["golemio_parameters"] = parametry;    
-
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println("failed to open config file for writing");
     }
 
-#if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-    serializeJson(json, Serial);
-    serializeJson(json, configFile);
-#else
-    json.printTo(Serial);
-    json.printTo(configFile);
-#endif
+    #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
+      #ifdef DEBUGGING
+      serializeJson(json, Serial);
+      #endif
+      serializeJson(json, configFile);
+    #else
+      #ifdef DEBUGGING
+      json.printTo(Serial);
+      #endif
+      json.printTo(configFile);
+    #endif
     configFile.close();
     //ESP.restart();
     //end save
@@ -635,15 +705,13 @@ void saveSpiffs() {
 }
 
 
-void setupManager() {
- // WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
-   wm.setConfigPortalTimeout(120);
-   wm.setBreakAfterConfig(true);
-  Serial.println("\n Starting");
-
-  
+void setupManager() 
+{
+  // WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
+  wm.setConfigPortalTimeout(120);
+  wm.setBreakAfterConfig(true);
+  Serial.println("\n Starting");  
   //if (wm_nonblocking) wm.setConfigPortalBlocking(false); 
-
 
   //set config save notify callback
   wm.setSaveConfigCallback(saveConfigCallback); 
@@ -657,10 +725,10 @@ void setupManager() {
   // set dark theme
   wm.setClass("invert");
 
-vypisChybuNaDispleje("connecting");
- setTextPage("starting portal","192.168.4.1",wifiPortalName,wifiPortalPassword);
- if (!wm.autoConnect(wifiPortalName.c_str(), wifiPortalPassword.c_str())) 
- {
+  vypisChybuNaDispleje("connecting");
+  setTextPage("starting portal","192.168.4.1",wifiPortalName,wifiPortalPassword);
+  if (!wm.autoConnect(wifiPortalName.c_str(), wifiPortalPassword.c_str())) 
+  {
     Serial.println("failed to connect and hit timeout");
     vypisChybuNaDispleje("spojeni se nezdařilo");
     delay(3000);
@@ -678,31 +746,31 @@ vypisChybuNaDispleje("connecting");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void setup() {  
-
+void setup() 
+{  
   Serial.begin(115200);
- // Serial.setDebugOutput(true);
+  // Serial.setDebugOutput(true);
   Serial.println("void setup()");
   
-     #ifdef LPKITC3
-  pinMode(USUP_POWER, OUTPUT); 
-  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
-   Serial.println("usup turned on");
+  #ifdef LPKITC3
+    pinMode(USUP_POWER, OUTPUT); 
+    digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+    Serial.println("usup turned on");
   #endif
   
-    #ifdef METEOMINIC3
-  pinMode(USUP_POWER, OUTPUT); 
-  digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
-   Serial.println("usup turned on");
+  #ifdef METEOMINIC3
+    pinMode(USUP_POWER, OUTPUT); 
+    digitalWrite(USUP_POWER, HIGH); // enable power supply for uSup
+    Serial.println("usup turned on");
   #endif
     
- pinMode(TRIGGER_PIN, INPUT);
-  #ifdef ESPLAN
-pinMode(TRIGGER_PIN, INPUT_PULLUP); 
-  #endif
 
-   #ifdef MHET
-  pinMode(TRIGGER_PIN, INPUT_PULLUP);  
+  #ifdef ESPLAN 
+    pinMode(TRIGGER_PIN, INPUT_PULLUP); 
+  #elif MHET
+    pinMode(TRIGGER_PIN, INPUT_PULLUP);  
+  #else
+    pinMode(TRIGGER_PIN, INPUT);
   #endif
 
   setupDisplay();
@@ -720,13 +788,12 @@ pinMode(TRIGGER_PIN, INPUT_PULLUP);
 
   //NTP setup
   initTime("CET-1CEST,M3.5.0,M10.5.0/3"); //Prague TimeZone
-
 }
 
 
-void loop() {
+void loop() 
+{
   checkButton();
   // put your main code here, to run repeatedly:
   check_status();
-
 }

@@ -19,14 +19,29 @@
 //#define MHET 1
 
 //#define CUSTOM 1 //Do-IT ESP32 with LCD display
+
 //uncomment to enable debug messages
-#define DEBUGGING 1
+//#define DEBUGGING 1
+
+//uncoment to use development Golemio server
+//#define RABIN 1
+
 
 
 //DISPLAY SETUP SECTION
 
 //uncomment to use 128x64 I2C OLED on address 0x3C with SSD1306 driver
 #define USE_OLED 1
+
+// not used, will configure oled driver type
+#define BIGOLED 1  
+
+//disable features to fit into DEfault 4MB with SPIFFS scheme
+#define MEMSAVE 1
+
+
+//also uncomment so use 256x128 with SSD1363 driver
+//#define MEGAOLED 1
 
 //uncomment to use 20x4 I2C LCD on address 0x3F
 //#define USE_LCD 1

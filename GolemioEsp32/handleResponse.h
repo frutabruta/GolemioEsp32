@@ -1,83 +1,92 @@
-void handleResponse(HTTPClient &http) {
- // const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
- // Serial.println("capacity:" + String(capacity));
-  //DynamicJsonDocument root(9000);
-
- Serial.println("handleResponse");
-
-
+void handleResponse(HTTPClient &http) 
+{
+  #ifdef DEBUGGING
+    Serial.println("handleResponse");
+  #endif
+  
   String httpResult = http.getString();
-#ifdef DEBUGGING
-  Serial.println(httpResult);
-#endif
+
+  #ifdef DEBUGGING
+    Serial.println(httpResult);
+  #endif
   /*
       to use http stream ChunkDecodingStream may help
     https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
-DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
-*/
-  JsonDocument root;
-
-  //DynamicJsonDocument root(9000);
-
-  JsonDocument filter;
-  //StaticJsonDocument<200> filter;
-  /*
-  filter[0][0]["departure"]["minutes"] = true;
-  filter[0][0]["trip"]["headsign"] = true;
-  filter[0][0]["route"]["short_name"] = true;
+  DeserializationError error = deserializeJson(root, http.getStream(), DeserializationOption::Filter(filter));
   */
+
+  JsonDocument root;
+  JsonDocument filter;
+
+  filter["stops"][0]["stop_name"] = true;
+  filter["stops"][0]["platform_code"] = true;
   filter["departures"][0]["departure_timestamp"]["minutes"] = true;
   filter["departures"][0]["trip"]["headsign"] = true;
   filter["departures"][0]["route"]["short_name"] = true;
-  
   filter["infotexts"][0]["text"] = true;
   filter["infotexts"][0]["display_type"] = true;
-  Serial.print("Velikost filtru:");
-  Serial.println(String(filter.size()));
 
+  #ifdef MEGAOLED
+    filter["departures"][0]["trip"]["is_wheelchair_accessible"] = true;
+    filter["departures"][0]["trip"]["is_air_conditioned"] = true; 
+    filter["departures"][0]["trip"]["direction"] = true; 
+    filter["departures"][0]["stop"]["platform_code"] = true;
+  #endif
 
-
-
+  #ifdef DEBUGGING
+    Serial.print("Velikost filtru:");
+    Serial.println(String(filter.size()));
+  #endif
 
   DeserializationError error = deserializeJson(root, httpResult, DeserializationOption::Filter(filter));
 
   // Test if parsing succeeds.
-  if (error) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
+  if (error) 
+  {
+    #ifdef DEBUGGING
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.f_str());
+    #endif
     return;
-  } else {
+  }
+  else
+  {
     Serial.print("json capacity:");
-// deprecated in ArduinoJson7    Serial.println(root.capacity());
   }
 
 
+  #ifdef USE_OLED
+    oled.clearBuffer();
+  #endif
 
-  //   clearDisplays();
+  String infotextsRunning="";
+  String infotextFullscreen="";
+ 
+  multipleStops=false;
+  
+  #ifdef MEGAOLED
+    stopCount= root["stops"].size();
 
-  // oled.setTextAlignment(TEXT_ALIGN_LEFT);
+    if(stopCount>0)
+    {
+      stopName=root["stops"][0]["stop_name"].as<const char *>();
+      platform=root["stops"][0]["platform_code"].as<const char *>();
+      if(stopCount>1)
+      {
+        multipleStops=true;
+        oledVykresliHlavicku("",stopName);
+      }
+      else
+      {
+        oledVykresliHlavicku(platform,stopName);
+      }
+    }
+  #endif
 
+  
 
-#ifdef USE_LCD
-  int lcdMaxPocetOdjezdu = 7;
-#endif
-
-#ifdef USE_OLED
-  int oledMaxPocetOdjezdu = 5;
-  oled.clearBuffer();
-
-  int cisloRadkuInfo = 5;
-  if (vyska32 == 1) {
-    oledMaxPocetOdjezdu = 2;
-    cisloRadkuInfo = 2;
-  }
-#endif
-
-String infotextsRunning="";
-String infotextFullscreen="";
-
- int arraySizeInfotexts = root["infotexts"].size();
-   Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
+  int arraySizeInfotexts = root["infotexts"].size();
+  Serial.println("pocet infotextu:" + String(arraySizeInfotexts));
  
   for (int i = 0; (i < arraySizeInfotexts); i++) 
   {
@@ -90,80 +99,123 @@ String infotextFullscreen="";
     }
     else if (infotextType=="general")
     {
+      #ifdef MEMSAVE
+      infotextsRunning+=infotext;
+      #else
       infotextFullscreen=infotext;
+      #endif
+
     }
     Serial.println(infotext);
   }
 
- int arraySize = root["departures"].size();
+  int arraySize = root["departures"].size();
   Serial.println("pocet odjezdu:" + String(arraySize));
 
   int counter = 0;
+  widestDepartureLength = 0;
 
-  for (int i = 0; (i < arraySize); i++) 
+//  infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
+ // infotextsRunning="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
+
+
+  usedDepartures=0;
+
+  if(infotextFullscreen=="")
   {
-    Serial.println("pruchod " + String(i));
-    Serial.println("pocetElementu " + String(root[0][i].size()));
-    String cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
-    String linka = root["departures"][i]["route"]["short_name"].as<const char *>();
-    String cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
-    Serial.println("spoj: " + linka + " " + cil + " " + cas);
-
-#ifdef USE_OLED
-    if (counter < oledMaxPocetOdjezdu) 
+    for (int i = 0; (i < arraySize); i++) 
     {
-      oledVykresliRadekOdjezdu(linka, cil, cas, counter);
+      Serial.println("pruchod " + String(i));
+      Serial.println("pocetElementu " + String(root[0][i].size()));
+      Departure departure;
+
+   
+
+      departure.cas = root["departures"][i]["departure_timestamp"]["minutes"].as<const char *>();
+      departure.linka = root["departures"][i]["route"]["short_name"].as<const char *>();
+      departure.cil = root["departures"][i]["trip"]["headsign"].as<const char *>();
+      departure.platformCode = root["departures"][i]["stop"]["platform_code"].as<const char *>();
+      departure.direction = root["departures"][i]["trip"]["direction"].as<const char *>();
+      departure.isAccessible = root["departures"][i]["trip"]["is_wheelchair_accessible"];
+      departure.isAirConditioned = root["departures"][i]["trip"]["is_air_conditioned"];
+
+/*
+      // xxxx
+      if(i==3)
+      {
+        departure.cil = "Brandýs n.L.-St.Bol.,Aut.st";
+      }
+*/
+      if(!multipleStops)
+      {
+        departure.platformCode="";
+      }
+      else
+      {
+        departure.direction="";
+      }
+    
+      Serial.println("spoj: " + departure.linka + " " + departure.cil + " "+departure.platformCode+" " + departure.cas);
+
+      #ifdef USE_OLED
+        if (counter < oledMaxPocetOdjezdu) 
+        {
+            departureArray[counter]=departure;
+            usedDepartures++;
+
+          #ifdef MEGAOLED
+            oledVykresliRadekOdjezduMega(departure, counter); //departure.linka, departure.cil, departure.cas, counter, departure.isAccessible, departure.isAirConditioned, departure.platformCode, departure.direction);
+          #else 
+            uint16_t destinationWidth = oledVykresliRadekOdjezdu(departure, counter);
+            if(destinationWidth>widestDepartureLength)
+            {
+              widestDepartureLength=destinationWidth;
+            }
+            
+          #endif
+        }
+      #endif
+
+      #ifdef USE_LCD
+        lcdVymazRadekOdjezdu(counter);
+        if (counter < lcdMaxPocetOdjezdu) 
+        {
+          lcdVykresliRadekOdjezdu(departure.linka, departure.cil, departure.cas, counter);
+        }   
+      #endif
+        counter++;
     }
-#endif
 
-#ifdef USE_LCD
-    lcdVymazRadekOdjezdu(counter);
-    if (counter < lcdMaxPocetOdjezdu) 
-    {
-      lcdVykresliRadekOdjezdu(linka, cil, cas, counter);
-    }
-    else 
-    {
-     
-    }
-
-
-#endif
-
-    counter++;
+    #ifdef USE_LCD
+      if(arraySize<lcdMaxPocetOdjezdu)
+      {
+        for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
+        {
+          lcdVymazRadekOdjezdu(j);
+        }
+      }
+    #endif
+  }
+  else
+  {
+    #ifndef MEMSAVE
+    oledSetGlobalInfotext(infotextFullscreen);
+    #endif
   }
 
-
-
-
-#ifdef USE_LCD
-
-  if(arraySize<lcdMaxPocetOdjezdu)
-  {
-    for(int j=arraySize;j<lcdMaxPocetOdjezdu;j++)
-    {
-      lcdVymazRadekOdjezdu(j);
-    }
-  }
-#endif
-
-
+ 
 
   String casPrikaz = "0:00";
   String den = "";
 
   //////// cas
 
+/*
   time_t rawtime;
   struct tm *timeinfo;
   time(&rawtime);
 
   timeinfo = localtime(&rawtime);
-
-
-
-  //timeinfo.hour;
-  // int minutOdRana=timeinfo.hour*60+timeinfo.minute;
 
   char buffer[80];
 
@@ -174,46 +226,28 @@ String infotextFullscreen="";
   strftime(bufferDatum, 80, "%d.%m.%Y", timeinfo);
   strftime(bufferCas, 80, "%R", timeinfo);
 
-  int minutOdRana = 0;
+  //int minutOdRana = 0;
   casPrikaz = bufferCas;
   strftime(buffer, 80, "%u", timeinfo);
   den = buffer;
-
-
-
-#ifdef USE_LCD
-  lcdVykresliCas();
-#endif
+*/
+  #ifdef USE_LCD
+    lcdVykresliCas();
+  #endif
 
   ////////konec casu
 
-#ifdef USE_OLED
-
- if(  infotextGlobalVariable!=infotextsRunning)
-  {
-    infotextOffset=0;
-  }
-  else
-  {
-    infotextOffset++;
-  }
-
-  
- infotextGlobalVariable=infotextsRunning;
-
- oledPeriodicDisplayUpdate();
- /*
- if(infotextGlobalVariable=="")
- {
-  oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo);
- }
- else
- {
-  oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo);
- }
- */
- 
-  //oled.startscrollleft(6,7);
-  oled.sendBuffer();
-#endif
+  #ifdef USE_OLED
+    if(  infotextGlobalVariable!=infotextsRunning)
+    {
+      infotextOffset=0;
+    }
+    else
+    {
+      infotextOffset++;
+    }
+    infotextGlobalVariable=infotextsRunning;
+    oledPeriodicDisplayUpdate();
+    oled.sendBuffer();
+  #endif
 }
