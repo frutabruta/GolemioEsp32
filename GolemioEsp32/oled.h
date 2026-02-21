@@ -382,6 +382,21 @@ void oledPeriodicDisplayUpdate()
       oled.clearBuffer();
   }
 
+  #ifdef MEGAOLED
+    if(stopCount>0)
+    {      
+      if(stopCount>1)
+      {
+        multipleStops=true;
+        oledVykresliHlavicku("",stopName);
+      }
+      else
+      {
+        oledVykresliHlavicku(platform,stopName);
+      }
+    }
+  #endif
+
 
   for(int i=0;i<usedDepartures;i++)
   {

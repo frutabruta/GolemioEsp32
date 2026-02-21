@@ -62,15 +62,15 @@ void handleResponse(HTTPClient &http)
   String infotextsRunning="";
   String infotextFullscreen="";
  
-  bool multipleStops=false;
+  multipleStops=false;
   
   #ifdef MEGAOLED
-    int stopCount= root["stops"].size();
+    stopCount= root["stops"].size();
 
     if(stopCount>0)
     {
-      String stopName=root["stops"][0]["stop_name"].as<const char *>();
-      String platform=root["stops"][0]["platform_code"].as<const char *>();
+      stopName=root["stops"][0]["stop_name"].as<const char *>();
+      platform=root["stops"][0]["platform_code"].as<const char *>();
       if(stopCount>1)
       {
         multipleStops=true;

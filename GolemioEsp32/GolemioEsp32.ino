@@ -4,7 +4,7 @@
 //u8g2
 
 
-String version="20260125_1655";
+String version="20260221_1103";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -174,6 +174,11 @@ const int scrollWaitCycles=50;
 
 int infotextOffset=0;
 String infotextGlobalVariable="";
+
+bool multipleStops=false;
+String stopName="";
+String platform="";
+int stopCount=0;
 
 ////////////////////////////////////// definice Golemio
 #ifdef ESP32

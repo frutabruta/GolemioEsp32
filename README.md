@@ -8,6 +8,9 @@ Should be possible to use generic ESP32 S2 and ESP32 C3 board respectively.
 
 [<img src="images/oledespwled.jpg" width="300px"/>](images/oledespwled.jpg?raw=true "128x64 OLED screen")
 
+[<img src="images/oled256x128.jpg" width="300px"/>](images/oled256x128.jpg?raw=true "256x128 OLED screen")
+
+
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
 ## Required libraries
 
@@ -43,7 +46,9 @@ For MH-ET ESP32Minikit, external button on pin 27 is required.
 - select display
     - to use 20x4 LCD uncomment ```#define USE_LCD 1```
     - to use 128x64 OLED uncomment ```#define USE_OLED 1```
-
+- Tools -> Board : select correct ESP32 version
+    - ESP32 C3 Dev module for Laskakit ESPwled
+- Tools -> Partiotioning scheme -> Minimal SPIFFS
 - upload code
 
 - connect to WI-FI hotspot created by ESP32 
@@ -99,6 +104,10 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260221_1103
+    - fixed header in periodic update for 256x128
+    - added photo to description
+     
 - 20260125_1655
     - new configuration optin RABIN to allow to use development server (requires development API key)
     - handleResponse
