@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 
-String version="20260221_1103";
+String version="20260315_1205";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //

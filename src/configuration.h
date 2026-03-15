@@ -37,7 +37,7 @@
 #define BIGOLED 1  
 
 //disable features to fit into DEfault 4MB with SPIFFS scheme
-#define MEMSAVE 1
+//#define MEMSAVE 1
 
 
 //also uncomment so use 256x128 with SSD1363 driver

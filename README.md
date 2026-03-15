@@ -104,6 +104,9 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260315_1205
+    - added option to compile with default partition table
+    
 - 20260315_1058
     - first platform.io version
     
