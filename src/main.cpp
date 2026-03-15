@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 
-String version="20260315_1205";
+String version="20260315_1805";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -173,8 +173,15 @@ bool scrollWait=true;
 int scrollWaitCounter=0;
 const int scrollWaitCycles=50;
 
+bool scrollWaitGeneral=true;
+int scrollWaitCounterGeneral=0;
+const int scrollWaitCyclesGeneral=50;
+
 int infotextOffset=0;
-String infotextGlobalVariable="";
+String infotextRunningGlobal="";
+String infotextGeneralGlobal="";
+int infotextGlobalYOffset=0;
+int infotextGlobalYOffsetMax=-64;
 
 bool multipleStops=false;
 String stopName="";

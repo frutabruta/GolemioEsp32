@@ -351,21 +351,27 @@ void oledSetTextPage(String line1, String line2="", String line3="", String line
   oled.sendBuffer();
 }
 
-void oledSetTextPageRaw(String line1, String line2="", String line3="", String line4="",String line5="",String line6="")
+
+void oledSetTextPageRaw(int yOffset,String line1, String line2="", String line3="", String line4="",String line5="",String line6="")
 {
   #ifdef MEGAOLED 
     oled.setFont(ZIS_12_normal);
   #else
     oled.setFont(czfont9);
+     oled.setDrawColor(0);
+    oled.drawBox(0, 0, 128, 50);
+    oled.setDrawColor(1);    
+    oled.setClipWindow(0, 0, 128, 50); 
   #endif
-  oledDrawStringFromLeft(0, 0*vyskaRadku+offsetRadku, line1);
-  oledDrawStringFromLeft(0, 1*vyskaRadku+offsetRadku, line2);
-  oledDrawStringFromLeft(0, 2*vyskaRadku+offsetRadku, line3);
-  oledDrawStringFromLeft(0, 3*vyskaRadku+offsetRadku, line4);
-  oledDrawStringFromLeft(0, 4*vyskaRadku+offsetRadku, line5);
+  oledDrawStringFromLeft(0, 0*vyskaRadku+offsetRadku+yOffset, line1);
+  oledDrawStringFromLeft(0, 1*vyskaRadku+offsetRadku+yOffset, line2);
+  oledDrawStringFromLeft(0, 2*vyskaRadku+offsetRadku+yOffset, line3);
+  oledDrawStringFromLeft(0, 3*vyskaRadku+offsetRadku+yOffset, line4);
+  oledDrawStringFromLeft(0, 4*vyskaRadku+offsetRadku+yOffset, line5);
   #ifdef MEGAOLED
-    oledDrawStringFromLeft(0, 5*vyskaRadku+offsetRadku, line6);
+    oledDrawStringFromLeft(0, 5*vyskaRadku+offsetRadku+yOffset, line6);
   #endif
+  oled.setMaxClipWindow();
 }
 /*
 void oledSetGlobalInfotext(String input)
@@ -375,12 +381,150 @@ void oledSetGlobalInfotext(String input)
 }
 */
 
+#ifndef MEMSAVE
+
+void oledSetGlobalInfotextRender(int yOffset,String textLineList[20], int usedLines)
+{
+  #ifdef MEGAOLED 
+    oled.setFont(ZIS_12_normal);
+  #else
+    oled.setFont(czfont9);
+    oled.setDrawColor(0);
+    oled.drawBox(0, 0, 128, 50);
+    oled.setDrawColor(1);    
+    oled.setClipWindow(0, 0, 128, 50); 
+  #endif
+
+  for(int i=0;i<usedLines;i++)
+{
+   oledDrawStringFromLeft(0, i*vyskaRadku+offsetRadku+yOffset, textLineList[i]);
+}
+
+  #ifdef MEGAOLED
+    oledDrawStringFromLeft(0, 5*vyskaRadku+offsetRadku+yOffset, line6);
+  #endif
+  oled.setMaxClipWindow();
+
+  infotextGlobalYOffsetMax=(-(vyskaRadku)*usedLines);
+  Serial.println("scroll height:"+String(infotextGlobalYOffsetMax)+" x "+String(usedLines));
+}
+/*
+void oledSetGlobalInfotext(String input)
+{
+  int delkaTextu=35;
+  oledSetTextPage(input.substring(0*delkaTextu,delkaTextu),input.substring(1*delkaTextu,2*delkaTextu),input.substring(2*delkaTextu,3*delkaTextu),input.substring(3*delkaTextu,4*delkaTextu));
+}
+*/
+
+#ifndef MEMSAVE
+
+void oledSetGlobalInfotext(String infotextFullscreen,int yOffset)
+{
+  #ifdef MEGAOLED 
+    oled.setFont(ZIS_12_normal);
+  #else
+    oled.setFont(czfont9);
+  #endif
+  
+  int start = 0;
+  String output="";
+  const int n = infotextFullscreen.length();
+
+  const int arrayMaxCount=20;
+  int usedArrayLines=0;
+
+  String stringArray[arrayMaxCount];
+  int stringIndex=0;
+
+  String currentString="";
+
+  // Skip leading spaces (if any)
+  while (start < n && infotextFullscreen[start] == ' ') 
+  {
+    start++;
+  }
+
+
+  while (start < n) 
+  {
+    int end = infotextFullscreen.indexOf(' ', start);
+    bool finished=false;
+    if (end == -1)
+    {
+       end = n;  // last token to end
+      finished=true;
+    }
+
+    // Extract token
+    String token = infotextFullscreen.substring(start, end);
+
+    if (token.length() > 0) 
+    {
+      //Serial.println(token);
+      output+="*"+token;
+      
+      String testString=currentString;
+      
+      if(currentString!="")
+      {
+        testString+=" ";
+      }
+      testString+=token;
+
+
+      uint16_t w = oled.getUTF8Width(testString.c_str());
+      if(w<maxDelkaRadku)
+      {
+        if(currentString!="")
+        {
+          currentString+=" ";
+        }
+        
+        currentString+=token;
+
+        if(finished)
+        {
+          stringArray[stringIndex]=currentString;
+          stringIndex++; 
+        }
+      }
+      else
+      {
+        if(stringIndex<arrayMaxCount)
+        {       
+          stringArray[stringIndex]=currentString;
+          stringIndex++; 
+          currentString=token;
+        }
+      }
+    }
+
+    // Move past spaces to next token
+    start = end;
+    while (start < n && infotextFullscreen[start] == ' ')
+    {
+      start++;
+    } 
+  }
+  usedArrayLines=stringIndex;
+  //oledSetTextPageRaw(yOffset, stringArray[0],stringArray[1],stringArray[2],stringArray[3],stringArray[4],stringArray[5]);
+
+
+  oledSetGlobalInfotextRender(yOffset,stringArray,usedArrayLines);
+  //return output;
+
+}
+#endif
+
+
 void oledPeriodicDisplayUpdate()
 {
   if(usedDepartures>0)
   {
       oled.clearBuffer();
   }
+
+
 
   #ifdef MEGAOLED
     if(stopCount>0)
@@ -418,6 +562,38 @@ void oledPeriodicDisplayUpdate()
       scrollWaitCounter=0;
       scrollWait=false;
     }
+
+  
+
+    if(scrollWaitGeneral)
+    {
+    scrollWaitCounterGeneral++;
+    }
+
+    if(scrollWaitCounterGeneral>=scrollWaitCyclesGeneral)
+    {
+      scrollWaitCounterGeneral=0;    
+      scrollWaitGeneral=false;  
+    }
+
+    if(!scrollWaitGeneral)
+    {
+      scrollWaitCounterGeneral++;
+      infotextGlobalYOffset--;
+  
+      if(infotextGlobalYOffset<infotextGlobalYOffsetMax)
+      {
+        infotextGlobalYOffset=0;
+        scrollWaitGeneral=true;
+      }
+    }
+
+    /*
+  if(infotextGlobalYOffset==0)
+    {
+      scrollWaitGeneral=true;
+    }*/
+
 
   // varianta prujezd
   /*
@@ -518,16 +694,34 @@ void oledPeriodicDisplayUpdate()
 
 //infotextGlobalVariable="Příliš žluťoučký kůň úpěl ďábelské ódy.";
 
-  if(infotextGlobalVariable=="")
-  {
+  //Serial.println("periodic");
+ // Serial.println("general: "+infotextGeneralGlobalVariable);
+
+
+
+  if(infotextRunningGlobal=="")
+  { 
+    
+    #ifndef MEMSAVE
+     if(infotextGeneralGlobal!="")
+      {
+       // oledSetGlobalInfotext(infotextRunningGlobal,infotextGlobalYOffset);
+         oledSetGlobalInfotext(infotextGeneralGlobal,infotextGlobalYOffset);
+        
+        //Serial.println("periodic"+String(infotextGlobalYOffset)+infotextGeneralGlobal.substring(0,10));
+      }
+    
+    #endif
     oledVykresliSpodniRadekDatum(casPrikaz, cisloDoDne(den.toInt())+String(" ")+bufferDatum, cisloRadkuInfo,displayColon);
+  
+    oled.sendBuffer();
   }
   else
   {
-    oledVykresliSpodniRadekInfotext(casPrikaz,infotextGlobalVariable,infotextOffset,cisloRadkuInfo, displayColon);
+    oledVykresliSpodniRadekInfotext(casPrikaz,infotextRunningGlobal,infotextOffset,cisloRadkuInfo, displayColon);
     infotextOffset++;
-   // infotextOffset++;
-    int textWidth=oled.getStrWidth(infotextGlobalVariable.c_str());
+
+    int textWidth=oled.getStrWidth(infotextRunningGlobal.c_str());
 
     if(infotextOffset>textWidth)
     {
@@ -546,104 +740,7 @@ void oledPeriodicDisplayUpdate()
 
 }
 
-#ifndef MEMSAVE
-
-void oledSetGlobalInfotext(String infotextFullscreen)
-{
-  #ifdef MEGAOLED 
-    oled.setFont(ZIS_12_normal);
-  #else
-    oled.setFont(czfont9);
-  #endif
-  
-  int start = 0;
-  String output="";
-  const int n = infotextFullscreen.length();
-
-  String stringArray[6];
-  int stringIndex=0;
-
-  String currentString="";
-
-  // Skip leading spaces (if any)
-  while (start < n && infotextFullscreen[start] == ' ') 
-  {
-    start++;
-  }
-
-
-  while (start < n) 
-  {
-    int end = infotextFullscreen.indexOf(' ', start);
-    bool finished=false;
-    if (end == -1)
-    {
-       end = n;  // last token to end
-      finished=true;
-    }
-
-    // Extract token
-    String token = infotextFullscreen.substring(start, end);
-
-    if (token.length() > 0) 
-    {
-      Serial.println(token);
-      output+="*"+token;
-      
-      String testString=currentString;
-      
-      if(currentString!="")
-      {
-        testString+=" ";
-      }
-      testString+=token;
-
-
-      uint16_t w = oled.getUTF8Width(testString.c_str());
-      if(w<maxDelkaRadku)
-      {
-        if(currentString!="")
-        {
-          currentString+=" ";
-        }
-        
-        currentString+=token;
-
-        if(finished)
-        {
-          stringArray[stringIndex]=currentString;
-          stringIndex++; 
-        }
-      }
-      else
-      {
-        if(stringIndex<6)
-        {       
-          stringArray[stringIndex]=currentString;
-          stringIndex++; 
-          currentString=token;
-        }
-      }
-    }
-
-    // Move past spaces to next token
-    start = end;
-    while (start < n && infotextFullscreen[start] == ' ')
-    {
-      start++;
-    } 
-  }
-  
-  oledSetTextPageRaw(stringArray[0],stringArray[1],stringArray[2],stringArray[3],stringArray[4],stringArray[5]);
-  //return output;
-
-}
 #endif
 
 
 #endif //end of OLED
-
-
-
-
-
