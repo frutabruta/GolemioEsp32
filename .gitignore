@@ -1,3 +1,5 @@
 ignore/
 GolemioEsp32/build/
+.pio/
+.vscode/
 *.bin

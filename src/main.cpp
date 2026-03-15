@@ -3,6 +3,7 @@
 
 //u8g2
 
+#include <Arduino.h>
 
 String version="20260221_1103";
 
@@ -185,6 +186,7 @@ int stopCount=0;
   #include <SPIFFS.h>
   #include <WiFi.h>
   #include <WiFiClientSecure.h>
+  //#include <NetworkClientSecure.h>
   #include <HTTPClient.h>
 #endif
 
@@ -251,6 +253,34 @@ bool filtrNeaktivni = true;
 //https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
 
 
+void printLocalTime() 
+{
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) 
+  {
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
+void setTextPage(String line1, String line2, String line3, String line4)
+{
+  #ifdef USE_OLED
+    oledSetTextPage(line1,line2,line3,line4);
+  #endif
+
+  #ifdef USE_LCD
+    lcdSetTextPage(line1,line2,line3,line4);
+  #endif 
+}
+
+void vypisChybuNaDispleje(String text) 
+{
+  printLocalTime();
+  setTextPage(text,"","","");
+  Serial.println("error: " + text);
+}
 
 void heartBeatPrint() 
 {
@@ -285,6 +315,93 @@ void heartBeatPrint()
     Serial.print(F(" "));
   }
 }
+
+void periodicDisplayUpdate()
+{
+  #ifdef USE_OLED
+    oledPeriodicDisplayUpdate();
+  #endif
+  
+  #ifdef USE_LCD
+    lcdPeriodicDisplayUpdate();
+  #endif
+}
+
+
+
+void stahni() 
+{
+
+  if (WiFi.status() == WL_CONNECTED) //Check WiFi connection status
+  {  
+    #ifdef ESP8266
+      std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
+    #endif
+
+    #ifdef ESP32
+      WiFiClientSecure *client = new WiFiClientSecure;
+    #endif
+
+    client->setInsecure();
+
+    if (client) 
+    {
+      HTTPClient http;
+      celaAdresa = zakladAdresy+parametry;
+      http.setTimeout(60000);
+
+      http.begin(*client, celaAdresa);
+
+      http.addHeader("X-Access-Token", klic);
+      http.addHeader(F("Content-Length"), String(0));
+
+      #ifdef ESP32
+      // removed with ESP32 version 3.x
+      //  http.setAcceptEncoding("identity");
+        // http.setConnectTimeout(1000);
+      #endif
+
+      #ifdef ESP8266
+        http.addHeader("Accept-Encoding", "identity");  //doesn't work
+      #endif
+
+      Serial.println(celaAdresa);
+
+      int httpCode = http.GET();  //Send the request
+
+      if (httpCode > 0) 
+      {
+        switch (httpCode) 
+        {
+          case 200:
+            handleResponse(http);
+            break;
+          default:
+            vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
+            break;
+        }
+
+      }
+      else
+      {
+        vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
+      }
+
+      http.end();  //Close connection
+    }
+    #ifdef ESP32
+        delete client;
+    #endif
+  } 
+  else 
+  {
+    vypisChybuNaDispleje("wifi nepripojeno");
+  }
+
+  //delay(30000);  //Send a request every 30 seconds
+}
+
+
 
 void check_status() 
 {
@@ -391,51 +508,32 @@ String timeToString()
 ////////////////////////////////////////////////////////// funkce golemio
 
 
-void printLocalTime() 
-{
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) 
-  {
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
 
-void setTextPage(String line1, String line2, String line3, String line4)
-{
-  #ifdef USE_OLED
-    oledSetTextPage(line1,line2,line3,line4);
-  #endif
 
-  #ifdef USE_LCD
-    lcdSetTextPage(line1,line2,line3,line4);
-  #endif 
-}
 
-void vypisChybuNaDispleje(String text) 
-{
-  printLocalTime();
-  setTextPage(text,"","","");
-  Serial.println("error: " + text);
-}
+
 
 
 void setupDisplay()
 {
   Serial.println("setupDisplay");
-  Wire.begin(SDA, SCL);
+  Serial.println("SCL:" + String(SCL) + " SDA:" + String(SDA));
+ // Wire.begin(SDA, SCL);
   //Wire.setClock(1000000);   
-  Wire.setClock(400000);   
+ // Wire.setClock(400000);   
 
   #ifdef USE_OLED
+  Serial.println("xx");
     oled.setI2CAddress(0x3C * 2);
+    //oled.setI2CAddress(0x3C);
     if (!oled.begin()) 
     {
+       Serial.println("yy");
       Serial.println(F("SSD1306 allocation failed"));
       /*  for (;;)
       ;  // Don't proceed, loop forever */
     }
+     Serial.println("zz");
     oled.enableUTF8Print();
     oled.setFontMode(0);
     oled.clearBuffer();
@@ -501,92 +599,46 @@ void clearDisplays()
 }
 
 
-void periodicDisplayUpdate()
-{
-  #ifdef USE_OLED
-    oledPeriodicDisplayUpdate();
-  #endif
-  
-  #ifdef USE_LCD
-    lcdPeriodicDisplayUpdate();
-  #endif
-}
-
-
-void stahni() 
-{
-
-  if (WiFi.status() == WL_CONNECTED) //Check WiFi connection status
-  {  
-    #ifdef ESP8266
-      std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
-    #endif
-
-    #ifdef ESP32
-      NetworkClientSecure *client = new NetworkClientSecure;
-    #endif
-
-    client->setInsecure();
-
-    if (client) 
-    {
-      HTTPClient http;
-      celaAdresa = zakladAdresy+parametry;
-      http.setTimeout(60000);
-
-      http.begin(*client, celaAdresa);
-
-      http.addHeader("X-Access-Token", klic);
-      http.addHeader(F("Content-Length"), String(0));
-
-      #ifdef ESP32
-        http.setAcceptEncoding("identity");
-        // http.setConnectTimeout(1000);
-      #endif
-
-      #ifdef ESP8266
-        http.addHeader("Accept-Encoding", "identity");  //doesn't work
-      #endif
-
-      Serial.println(celaAdresa);
-
-      int httpCode = http.GET();  //Send the request
-
-      if (httpCode > 0) 
-      {
-        switch (httpCode) 
-        {
-          case 200:
-            handleResponse(http);
-            break;
-          default:
-            vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
-            break;
-        }
-
-      }
-      else
-      {
-        vypisChybuNaDispleje("chyba http: " + String(httpCode)+" kanal "+WiFi.channel());
-      }
-
-      http.end();  //Close connection
-    }
-    #ifdef ESP32
-        delete client;
-    #endif
-  } 
-  else 
-  {
-    vypisChybuNaDispleje("wifi nepripojeno");
-  }
-
-  //delay(30000);  //Send a request every 30 seconds
-}
-
-
 
 bool shouldSaveConfig = false;
+
+void saveSpiffs() 
+{
+  //save the custom parameters to FS
+  if (shouldSaveConfig) {
+    Serial.println("saving config");
+    #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
+      JsonDocument json;
+    #else
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& json = jsonBuffer.createObject();
+    #endif
+
+    json["golemio_api_key"] = klic;
+    json["golemio_parameters"] = parametry;    
+
+    File configFile = SPIFFS.open("/config.json", "w");
+    if (!configFile) {
+      Serial.println("failed to open config file for writing");
+    }
+
+    #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
+      #ifdef DEBUGGING
+      serializeJson(json, Serial);
+      #endif
+      serializeJson(json, configFile);
+    #else
+      #ifdef DEBUGGING
+      json.printTo(Serial);
+      #endif
+      json.printTo(configFile);
+    #endif
+    configFile.close();
+    //ESP.restart();
+    //end save
+  }
+}
+
 
 //callback notifying us of the need to save config
 void saveConfigCallback () 
@@ -650,8 +702,8 @@ void setupSpiffs()
           {
         #endif
             Serial.println("\nparsed json");
-            klic = String(json["golemio_api_key"]);
-            parametry = String(json["golemio_parameters"]);
+            klic = json["golemio_api_key"].as<String>();
+            parametry = json["golemio_parameters"].as<String>();
           } 
           else
           {
@@ -666,44 +718,6 @@ void setupSpiffs()
     Serial.println("failed to mount FS");
   }
 }
-
-void saveSpiffs() 
-{
-  //save the custom parameters to FS
-  if (shouldSaveConfig) {
-    Serial.println("saving config");
-    #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-      JsonDocument json;
-    #else
-      DynamicJsonBuffer jsonBuffer;
-      JsonObject& json = jsonBuffer.createObject();
-    #endif
-
-    json["golemio_api_key"] = klic;
-    json["golemio_parameters"] = parametry;    
-
-    File configFile = SPIFFS.open("/config.json", "w");
-    if (!configFile) {
-      Serial.println("failed to open config file for writing");
-    }
-
-    #if defined(ARDUINOJSON_VERSION_MAJOR) && ARDUINOJSON_VERSION_MAJOR >= 6
-      #ifdef DEBUGGING
-      serializeJson(json, Serial);
-      #endif
-      serializeJson(json, configFile);
-    #else
-      #ifdef DEBUGGING
-      json.printTo(Serial);
-      #endif
-      json.printTo(configFile);
-    #endif
-    configFile.close();
-    //ESP.restart();
-    //end save
-  }
-}
-
 
 void setupManager() 
 {

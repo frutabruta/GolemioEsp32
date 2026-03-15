@@ -21,7 +21,7 @@
 //#define CUSTOM 1 //Do-IT ESP32 with LCD display
 
 //uncomment to enable debug messages
-//#define DEBUGGING 1
+#define DEBUGGING 1
 
 //uncoment to use development Golemio server
 //#define RABIN 1
