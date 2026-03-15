@@ -115,7 +115,7 @@ void handleResponse(HTTPClient &http)
   int counter = 0;
   widestDepartureLength = 0;
 
-  infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
+  //infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
  // infotextsRunning="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
 
 
