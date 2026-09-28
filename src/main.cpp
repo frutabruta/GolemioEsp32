@@ -4,8 +4,9 @@
 //u8g2
 
 #include <Arduino.h>
+#include <esp_mac.h>
 
-String version="20260315_1805";
+String version="20260315_1805p";
 
 // tested with MH-ET LIVE ESP32 MiniKIT
 //
@@ -250,7 +251,24 @@ int pocitacVterin = 30;
 
 String idZastavky = "58791";  //58762 balabenka
 
-String wifiPortalName="GolemioSetup";
+
+
+
+
+//ssid = "ESP32_AP_" + String(suffix);
+
+String getSsidSuffix()
+{
+  uint8_t mac[6];
+esp_efuse_mac_get_default(mac);
+
+char suffix[7];
+snprintf(suffix, sizeof(suffix), "%02X%02X%02X", mac[3], mac[4], mac[5]);
+
+return String(suffix);
+}
+
+String wifiPortalName="GolemioSetup_"+getSsidSuffix();
 String wifiPortalPassword="password";
 
 bool filtrNeaktivni = true;
@@ -258,6 +276,7 @@ bool filtrNeaktivni = true;
 
 //////////////// http client
 //https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
+
 
 
 void printLocalTime() 

@@ -104,8 +104,12 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260315_1805p
+    - changed default wifi name to contain e-fuse MAC address
+
 - 20260315_1805
     - moving general infotext
+
 - 20260315_1205
     - added option to compile with default partition table
     
