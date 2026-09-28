@@ -115,14 +115,15 @@ void handleResponse(HTTPClient &http)
   int counter = 0;
   widestDepartureLength = 0;
 
-//  infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
+  //infotextFullscreen="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
  // infotextsRunning="Velmi dlouhý celoplošný text se animuje posuvem bloku zdola nahoru, jako u filmových titulků. Celoplošný text je zarovnaný doleva a od ostatních textů oddělený mezerou. Po skončení textu není nutné čekat na odjetí celého textu pryč, ale pokud to technologie umožní, může po krátké mezeře opět začít nový cyklus.";
 
 
   usedDepartures=0;
-
+  infotextGeneralGlobal=infotextFullscreen;
   if(infotextFullscreen=="")
   {
+    
     for (int i = 0; (i < arraySize); i++) 
     {
       Serial.println("pruchod " + String(i));
@@ -199,7 +200,7 @@ void handleResponse(HTTPClient &http)
   else
   {
     #ifndef MEMSAVE
-    oledSetGlobalInfotext(infotextFullscreen);
+  //  oledSetGlobalInfotext(infotextGeneralGlobal,infotextGlobalYOffset);
     #endif
   }
 
@@ -238,7 +239,7 @@ void handleResponse(HTTPClient &http)
   ////////konec casu
 
   #ifdef USE_OLED
-    if(  infotextGlobalVariable!=infotextsRunning)
+    if(  infotextRunningGlobal!=infotextsRunning)
     {
       infotextOffset=0;
     }
@@ -246,7 +247,7 @@ void handleResponse(HTTPClient &http)
     {
       infotextOffset++;
     }
-    infotextGlobalVariable=infotextsRunning;
+    infotextRunningGlobal=infotextsRunning;
     oledPeriodicDisplayUpdate();
     oled.sendBuffer();
   #endif

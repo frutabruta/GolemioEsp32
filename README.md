@@ -1,4 +1,4 @@
-# GolemioEsp32
+# GolemioEsp32 - PlatformIO version
 
 Project to show Prague Integrated System (http://www.pid.cz) departures from GolemioAPI using ESP32 and 128x64 graphic OLED or 20x4 character LCD display. 
 
@@ -104,6 +104,18 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260315_1805p
+    - changed default wifi name to contain e-fuse MAC address
+
+- 20260315_1805
+    - moving general infotext
+
+- 20260315_1205
+    - added option to compile with default partition table
+    
+- 20260315_1058
+    - first platform.io version
+    
 - 20260221_1103
     - fixed header in periodic update for 256x128
     - added photo to description
