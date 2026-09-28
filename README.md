@@ -5,6 +5,10 @@ Project to show Prague Integrated System (http://www.pid.cz) departures from Gol
 Tested boards are MH-ET LIVE ESP32 MiniKIT and [LaskaKit ESPwled](https://github.com/LaskaKit/ESPwled).
 Should be possible to use generic ESP32 S2 and ESP32 C3 board respectively.
 
+The development has been switched from Arduino IDE to PlatformIO.
+
+Install VSCode with PlatformIO plugin.
+
 
 [<img src="images/oledespwled.jpg" width="300px"/>](images/oledespwled.jpg?raw=true "128x64 OLED screen")
 
@@ -12,7 +16,7 @@ Should be possible to use generic ESP32 S2 and ESP32 C3 board respectively.
 
 
 [<img src="images/lcd20x4.jpg?raw=true" width="300px"/>](images/lcd20x4.jpg?raw=true "20x4 LCD screen")
-## Required libraries
+## Required libraries - installed automatically with PlatformIO
 
 WiFiManager by tzapu (2.0.17)
 https://github.com/tzapu/WiFiManager/tree/master
@@ -104,6 +108,9 @@ https://stncrn.github.io/u8g2-unifont-helper/
 
 
 ## Changelog
+- 20260928_1747
+    - readme platformIO fix
+
 - 20260315_1805p
     - changed default wifi name to contain e-fuse MAC address
 
